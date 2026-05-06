@@ -85,10 +85,6 @@ import {
 const SENTIMENT_COLORS: Record<string, string> = {
   positive: '#22c55e', neutral: '#f59e0b', negative: '#ef4444', question: '#a855f7',
 }
-const _PLATFORM_COLORS: Record<string, string> = {
-  telegram: '#26A5E4', reddit: '#FF4500', youtube: '#FF0000', x: '#1DA1F2',
-  instagram: '#E4405F', facebook: '#1877F2', tiktok: '#EE1D52', web: '#6B7280',
-}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import {
+  Loader2,
   Plus,
   RefreshCw,
   Search as SearchIcon,

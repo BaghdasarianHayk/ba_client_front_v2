@@ -1,4 +1,3 @@
-import { formatDistanceToNow } from 'date-fns'
 import {
   ArrowRight,
   Blend,
@@ -31,11 +30,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { PlatformIcon } from '@/components/platform-icon'
 import type { Keyword } from '@/services/api/keyword-service'
 

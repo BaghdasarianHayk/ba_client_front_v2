@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import {
+  BotMessageSquare,
   CalendarIcon,
-  Megaphone,
   MessageCircleOff,
   MessageCircleReply,
   MessageSquare,

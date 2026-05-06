@@ -1,7 +1,6 @@
-import { Fragment, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import {
-  Loader2,
   Plus,
   RefreshCw,
   Search as SearchIcon,
@@ -10,7 +9,6 @@ import {
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Collapsible,
@@ -26,7 +24,7 @@ import {
   KeywordService,
   type Keyword,
 } from '@/services/api/keyword-service'
-import { MentionService, type MentionStats } from '@/services/api/mention-service'
+import { MentionService } from '@/services/api/mention-service'
 import type { KeywordSuggestions } from '@/services/api/types'
 import { KeywordsTable } from './components/keywords-table'
 import { KeywordDeleteDialog } from './components/keyword-delete-dialog'
@@ -164,11 +162,11 @@ export function KeywordsPage() {
   }
 
   const handleAdd = () => {
-    navigate({ to: '/keywords/new' })
+    navigate({ to: '/keywords/new' as any })
   }
 
   const handleAddFromSuggestion = (kw: string) => {
-    navigate({ to: '/keywords/new', search: { keyword: kw } })
+    navigate({ to: '/keywords/new' as any, search: { keyword: kw } as any })
   }
 
   const handleEdit = (kw: Keyword) => {

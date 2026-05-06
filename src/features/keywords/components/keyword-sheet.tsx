@@ -190,10 +190,10 @@ export function KeywordSheet({
     setSaving(true)
     try {
       if (isEdit) {
-        await KeywordService.updateKeyword(editKw!.id, buildRequest())
+        await KeywordService.updateKeyword(editKw!.id, buildRequest() as any)
         toast.success('Keyword updated')
       } else {
-        await KeywordService.createKeyword(projectId, buildRequest())
+        await KeywordService.createKeyword(projectId, buildRequest() as any)
         toast.success('Keyword created')
       }
       onOpenChange(false)

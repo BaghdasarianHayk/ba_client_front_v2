@@ -1,13 +1,9 @@
 import { 
-  startOfWeek, 
-  startOfMonth, 
   format, 
   eachWeekOfInterval, 
   eachMonthOfInterval,
-  eachHourOfInterval,
   parseISO,
   isWithinInterval,
-  differenceInDays,
 } from 'date-fns'
 
 export type GroupBy = 'hour' | 'day' | 'week' | 'month'
@@ -41,8 +37,8 @@ export function aggregateData(
     // No aggregation needed, just format for display
     return dailyData.map(d => ({
       ...d,
-      date: d.dateLabel || d.date, // Use dateLabel if available, otherwise date
-      label: d.dateLabel || d.date,
+      date: String(d.dateLabel || d.date),
+      label: String(d.dateLabel || d.date),
     }))
   }
 
@@ -54,7 +50,7 @@ export function aggregateData(
     return aggregateByMonth(dailyData, dateFrom, dateTo)
   }
 
-  return dailyData.map(d => ({ ...d, label: d.dateLabel || d.date }))
+  return dailyData.map(d => ({ ...d, label: String(d.dateLabel || d.date) }))
 }
 
 /**

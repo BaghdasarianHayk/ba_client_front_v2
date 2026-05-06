@@ -30,7 +30,7 @@ export function CommentsForm() {
   const [saving, setSaving] = useState(false)
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues: { topCount: 5, minRelevance: 50 },
   })
 

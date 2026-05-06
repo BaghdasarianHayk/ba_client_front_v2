@@ -421,7 +421,7 @@ export function Mentions() {
                 }}
               />
               <Calendar
-                mode='default'
+                mode='single'
                 modifiers={{
                   range_start: dateFrom ? [dateFrom] : [],
                   range_end: dateTo ? [dateTo] : [],

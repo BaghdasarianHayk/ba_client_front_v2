@@ -40,7 +40,7 @@ const formSchema = z
     }),
     fullName: z.string().min(1, 'Please enter your full name'),
     languagePreference: z.enum(['en', 'ru'], {
-      required_error: 'Please select a language',
+      message: 'Please select a language',
     }),
     password: z
       .string()

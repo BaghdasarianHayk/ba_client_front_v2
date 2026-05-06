@@ -3,14 +3,13 @@ import { useParams } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
-import { KeywordService, type Keyword } from '@/services/api/keyword-service'
+import { KeywordService } from '@/services/api/keyword-service'
 
 export function KeywordMonitoring() {
   const { keywordId } = useParams({ strict: false }) as { keywordId?: string }

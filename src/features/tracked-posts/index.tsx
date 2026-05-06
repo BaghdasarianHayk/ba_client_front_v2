@@ -2,15 +2,11 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import { useNavigate } from '@tanstack/react-router'
 import {
-  Loader2,
   Plus,
   Rss,
   Search as SearchIcon,
-  Settings,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'

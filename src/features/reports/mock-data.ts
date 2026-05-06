@@ -1,4 +1,4 @@
-import { subDays, format, eachDayOfInterval, eachHourOfInterval, startOfDay, endOfDay, subHours } from 'date-fns'
+import { subDays, format, eachDayOfInterval, eachHourOfInterval, subHours } from 'date-fns'
 
 const now = new Date()
 const days30 = eachDayOfInterval({ start: subDays(now, 30), end: now })

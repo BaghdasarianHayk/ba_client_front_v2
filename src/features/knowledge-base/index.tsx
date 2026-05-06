@@ -7,7 +7,6 @@ import {
   FileIcon,
   FileText,
   Globe,
-  Loader2,
   MoreHorizontal,
   Swords,
   Trash2,

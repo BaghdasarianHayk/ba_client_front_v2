@@ -9,13 +9,11 @@ import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { SidebarNav } from '@/features/settings/components/sidebar-nav'
-import { KeywordService, type Keyword } from '@/services/api/keyword-service'
 
 export function KeywordSettings() {
   const { keywordId } = useParams({ strict: false }) as { keywordId?: string }
   const isNew = !keywordId || keywordId === 'new'
 
-  const [keyword, setKeyword] = useState<Keyword | null>(null)
   const [loading, setLoading] = useState(!isNew)
 
   // Fetch keyword data for edit mode

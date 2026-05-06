@@ -13,7 +13,6 @@ import {
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -212,7 +211,6 @@ export function ProjectsPage() {
   const {
     projects,
     sharedProjects,
-    currentProject,
     isLoading,
     fetchProjects,
     setCurrentProject,

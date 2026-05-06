@@ -3,7 +3,6 @@ import { format } from 'date-fns'
 import { useNavigate } from '@tanstack/react-router'
 import {
   ArrowLeft,
-  Loader2,
   Plus,
   Radio,
   Search as SearchIcon,

@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { ContentSection } from '@/features/settings/components/content-section'
 import { PlatformIcon, type PlatformId } from '@/components/platform-icon'
 import { useProjectStore } from '@/stores/project-store'
-import { KeywordService, type Keyword } from '@/services/api/keyword-service'
+import { KeywordService } from '@/services/api/keyword-service'
 
 const ALL_PLATFORMS: { id: PlatformId; label: string }[] = [
   { id: 'reddit', label: 'Reddit' },

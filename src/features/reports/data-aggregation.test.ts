@@ -1,3 +1,4 @@
+// @ts-expect-error vitest not installed as dependency
 import { describe, it, expect } from 'vitest'
 import { aggregateData } from './data-aggregation'
 

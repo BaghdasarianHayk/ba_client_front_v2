@@ -253,7 +253,7 @@ export function Tasks() {
             <PopoverContent className='w-auto p-0' align='start'>
               <DateRangePresets from={dateFrom} onSelect={handlePreset} />
               <Calendar
-                mode='default'
+                mode='single'
                 modifiers={{
                   range_start: dateFrom ? [dateFrom] : [],
                   range_end: dateTo ? [dateTo] : [],

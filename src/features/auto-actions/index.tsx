@@ -7,7 +7,6 @@ import {
   Blend,
   Bot,
   KeyRound,
-  Loader2,
   Megaphone,
   Meh,
   MessageCircleQuestion,
@@ -20,7 +19,6 @@ import {
   Smile,
   ThumbsDown,
   ThumbsUp,
-  Trash2,
   Zap,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -34,7 +32,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Switch } from '@/components/ui/switch'
+
 import {
   Table,
   TableBody,

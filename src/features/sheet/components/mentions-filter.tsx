@@ -1,8 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import {
-  Blend,
-  BotMessageSquare,
   CalendarIcon,
   Megaphone,
   MessageCircleOff,
@@ -260,7 +258,7 @@ export function MentionsFilter({ filters, stats, onApply, onClose }: Props) {
               <PopoverContent className='w-auto p-0' align='start'>
                 <DateRangePresets from={dateFrom} onSelect={handlePreset} />
                 <Calendar
-                  mode='default'
+                  mode='single'
                   modifiers={{
                     range_start: dateFrom ? [dateFrom] : [],
                     range_end: dateTo ? [dateTo] : [],

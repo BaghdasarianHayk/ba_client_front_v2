@@ -16,13 +16,8 @@ import {
 import {
   Area,
   AreaChart,
-  Bar,
-  BarChart,
   CartesianGrid,
-  Cell,
   Legend,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip as RTooltip,
   XAxis,
@@ -45,7 +40,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { Progress } from '@/components/ui/progress'
 import { Slider } from '@/components/ui/slider'
 import {
   Table,
@@ -69,22 +63,16 @@ import { PlatformIcon, type PlatformId } from '@/components/platform-icon'
 import { DateRangePresets } from '@/components/shared/date-range-presets'
 import { aggregateData, type GroupBy } from './data-aggregation'
 import {
-  activityByDay,
   mentionsByDay,
   mentionsByHour,
-  mentionsByPlatform,
   mentionsByPlatformOverTime,
   mentionsByPlatformByHour,
   reachScoreByPlatform,
   reachScoreByPlatformByHour,
-  mentionsBySentiment,
   topAuthors,
   summary,
   engagementFunnel,
   keywordPerformance,
-  responseTimeDistribution,
-  responseTimeStats,
-  sentimentTrend,
   peakHoursData,
 } from './mock-data'
 
@@ -97,7 +85,7 @@ import {
 const SENTIMENT_COLORS: Record<string, string> = {
   positive: '#22c55e', neutral: '#f59e0b', negative: '#ef4444', question: '#a855f7',
 }
-const PLATFORM_COLORS: Record<string, string> = {
+const _PLATFORM_COLORS: Record<string, string> = {
   telegram: '#26A5E4', reddit: '#FF4500', youtube: '#FF0000', x: '#1DA1F2',
   instagram: '#E4405F', facebook: '#1877F2', tiktok: '#EE1D52', web: '#6B7280',
 }
@@ -257,7 +245,7 @@ export function ReportsPage() {
           <PopoverContent className='w-auto p-0' align='start'>
             <DateRangePresets from={dateFrom} onSelect={(f, t) => { setDateFrom(f); setDateTo(t) }} />
             <Calendar
-              mode='default'
+              mode='single'
               modifiers={{ range_start: [dateFrom], range_end: [dateTo], range_middle: { after: dateFrom, before: dateTo } }}
               modifiersClassNames={{ range_start: 'bg-primary text-primary-foreground rounded-l-md', range_end: 'bg-primary text-primary-foreground rounded-r-md', range_middle: 'bg-accent text-accent-foreground rounded-none' }}
               onDayClick={handleDayClick}

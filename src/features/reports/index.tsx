@@ -7,11 +7,6 @@ import {
   CalendarIcon,
   Download,
   Filter,
-  MessageSquare,
-  Radio,
-  SmilePlus,
-  TrendingUp,
-  Zap,
 } from 'lucide-react'
 import {
   Area,
@@ -69,6 +64,8 @@ import {
   mentionsByPlatformByHour,
   reachScoreByPlatform,
   reachScoreByPlatformByHour,
+  activityByDay,
+  activityByHour,
   topAuthors,
   summary,
   engagementFunnel,
@@ -84,6 +81,18 @@ import {
 
 const SENTIMENT_COLORS: Record<string, string> = {
   positive: '#22c55e', neutral: '#f59e0b', negative: '#ef4444', question: '#a855f7',
+}
+
+// Highly contrasting chart colors (Yandex.Metrica-inspired, maximally distinct)
+const CHART_PLATFORM_COLORS: Record<string, string> = {
+  telegram: '#FF9800', // orange
+  reddit: '#E91E63',   // pink
+  youtube: '#9C27B0',  // purple
+  x: '#2196F3',        // blue
+  instagram: '#00BCD4', // cyan
+  facebook: '#4CAF50', // green
+  tiktok: '#F44336',   // red
+  web: '#795548',      // brown
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -134,9 +143,27 @@ export function ReportsPage() {
   const [activePlatforms, setActivePlatforms] = useState<Set<string>>(new Set())
   const [activeReachPlatforms, setActiveReachPlatforms] = useState<Set<string>>(new Set())
 
-  // ── Mock filter state (Task 5) ─────────────────────────────────────────────
+  // ── Filter state ────────────────────────────────────────────────────────────
   const [selectedKeywords, setSelectedKeywords] = useState<Set<string>>(new Set())
   const [relevanceRange, setRelevanceRange] = useState<[number, number]>([0, 100])
+  const [scoreRange, setScoreRange] = useState<[number, number]>([0, 50000])
+  const [selectedPlatforms, setSelectedPlatforms] = useState<Set<string>>(new Set())
+  const [selectedSentiments, setSelectedSentiments] = useState<Set<string>>(new Set())
+  const [selectedKwTypes, setSelectedKwTypes] = useState<Set<string>>(new Set())
+  const [repliedFilter, setRepliedFilter] = useState<Set<string>>(new Set(['not', 'auto', 'manual']))
+  const [hasComments, setHasComments] = useState<'all' | 'yes' | 'no'>('all')
+
+  // Count active filters for badge
+  const activeFilterCount = [
+    selectedPlatforms.size > 0,
+    selectedSentiments.size > 0,
+    selectedKeywords.size > 0,
+    selectedKwTypes.size > 0,
+    repliedFilter.size < 3,
+    hasComments !== 'all',
+    relevanceRange[0] > 0 || relevanceRange[1] < 100,
+    scoreRange[0] > 0 || scoreRange[1] < 50000,
+  ].filter(Boolean).length
 
   // Auto-determine grouping based on date range, but allow manual override
   const recommendedGrouping = useMemo(() => getRecommendedGrouping(dateFrom, dateTo), [dateFrom, dateTo])
@@ -189,6 +216,16 @@ export function ReportsPage() {
     [sourceDataReach, groupBy, dateFrom, dateTo]
   )
 
+  // Activity (comments: auto + manual)
+  const sourceDataActivity = isHourly
+    ? filterByDateRange(activityByHour)
+    : filterByDateRange(activityByDay)
+  const aggregatedActivity = useMemo(
+    () => aggregateData(sourceDataActivity, groupBy, dateFrom, dateTo),
+    [sourceDataActivity, groupBy, dateFrom, dateTo]
+  )
+  const totalComments = aggregatedActivity.reduce((sum, d) => sum + ((d.auto as number) || 0) + ((d.manual as number) || 0), 0)
+
   const handleDayClick = (day: Date) => {
     if (dateTo && dateFrom && dateFrom.getTime() !== dateTo.getTime()) {
       setDateFrom(day); setDateTo(day)
@@ -231,6 +268,7 @@ export function ReportsPage() {
         <BarChart3 className='size-4 text-muted-foreground' />
         <h1 className='text-sm font-semibold'>Reports</h1>
 
+        {/* Date picker */}
         <Popover>
           <PopoverTrigger asChild>
             <button className='inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border bg-muted/60 px-2.5 py-1 text-xs font-medium hover:bg-muted'>
@@ -252,6 +290,120 @@ export function ReportsPage() {
           </PopoverContent>
         </Popover>
 
+        {/* Grouping tabs (day/week/month) next to date */}
+        {availableGroupings.length > 1 && (
+          <Tabs value={groupBy} onValueChange={(v) => setGroupBy(v as GroupBy)}>
+            <TabsList className='h-7'>
+              {availableGroupings.includes('hour') && <TabsTrigger value='hour' className='h-6 px-2 text-[11px]'>Hour</TabsTrigger>}
+              {availableGroupings.includes('day') && <TabsTrigger value='day' className='h-6 px-2 text-[11px]'>Day</TabsTrigger>}
+              {availableGroupings.includes('week') && <TabsTrigger value='week' className='h-6 px-2 text-[11px]'>Week</TabsTrigger>}
+              {availableGroupings.includes('month') && <TabsTrigger value='month' className='h-6 px-2 text-[11px]'>Month</TabsTrigger>}
+            </TabsList>
+          </Tabs>
+        )}
+
+        {/* Filters in header */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className='inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border bg-muted/60 px-2.5 py-1 text-xs font-medium transition-colors hover:bg-muted'>
+              <Filter className='size-3' />
+              Filters
+              {activeFilterCount > 0 && (
+                <span className='flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground'>
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className='w-80 max-h-[70vh] overflow-y-auto p-3' align='start'>
+            <div className='space-y-4'>
+              {/* Platforms */}
+              <FilterSection label='Platforms'>
+                <div className='flex flex-wrap gap-1'>
+                  {['telegram', 'reddit', 'youtube', 'x', 'instagram', 'facebook', 'tiktok', 'web'].map((p) => (
+                    <button key={p} type='button' onClick={() => { setSelectedPlatforms((prev) => { const next = new Set(prev); next.has(p) ? next.delete(p) : next.add(p); return next }) }}
+                      className={cn('flex items-center gap-1 rounded-full border px-2 py-1 text-[11px] transition-colors', selectedPlatforms.has(p) ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:text-foreground')}>
+                      <PlatformIcon platform={p as PlatformId} size='sm' />
+                      <span className='capitalize'>{p}</span>
+                    </button>
+                  ))}
+                </div>
+              </FilterSection>
+
+              {/* Sentiments */}
+              <FilterSection label='Sentiment'>
+                <div className='flex flex-wrap gap-1'>
+                  {[{ id: 'positive', label: 'Positive', cls: 'text-green-600 border-green-500/30 bg-green-500/10' }, { id: 'neutral', label: 'Neutral', cls: 'text-amber-600 border-amber-500/30 bg-amber-500/10' }, { id: 'negative', label: 'Negative', cls: 'text-red-600 border-red-500/30 bg-red-500/10' }, { id: 'question', label: 'Question', cls: 'text-purple-600 border-purple-500/30 bg-purple-500/10' }].map(({ id, label, cls }) => (
+                    <button key={id} type='button' onClick={() => { setSelectedSentiments((prev) => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next }) }}
+                      className={cn('rounded-full border px-2 py-1 text-[11px] transition-colors', selectedSentiments.has(id) ? cls : 'border-border text-muted-foreground hover:text-foreground')}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </FilterSection>
+
+              {/* Keywords */}
+              <FilterSection label='Keywords'>
+                <div className='max-h-28 space-y-1 overflow-y-auto'>
+                  {keywordPerformance.map((kw) => (
+                    <label key={kw.keyword} className='flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-xs hover:bg-accent'>
+                      <Checkbox checked={selectedKeywords.has(kw.keyword)} onCheckedChange={(checked) => { setSelectedKeywords((prev) => { const next = new Set(prev); if (checked) next.add(kw.keyword); else next.delete(kw.keyword); return next }) }} />
+                      <span className='truncate'>{kw.keyword}</span>
+                      <span className='ml-auto text-[10px] text-muted-foreground'>{kw.mentions}</span>
+                    </label>
+                  ))}
+                </div>
+              </FilterSection>
+
+              {/* Keyword Type */}
+              <FilterSection label='Keyword Type'>
+                <div className='flex gap-1'>
+                  {[{ id: 'brand', label: 'Brand' }, { id: 'competitor', label: 'Competitor' }, { id: 'general', label: 'General' }].map(({ id, label }) => (
+                    <button key={id} type='button' onClick={() => { setSelectedKwTypes((prev) => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next }) }}
+                      className={cn('rounded-full border px-2.5 py-1 text-[11px] transition-colors', selectedKwTypes.has(id) ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:text-foreground')}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </FilterSection>
+
+              {/* Reply Status */}
+              <FilterSection label='Reply Status'>
+                <div className='flex gap-1'>
+                  {[{ id: 'not', label: 'Not Replied' }, { id: 'auto', label: 'Auto' }, { id: 'manual', label: 'Manual' }].map(({ id, label }) => (
+                    <button key={id} type='button' onClick={() => { setRepliedFilter((prev) => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next }) }}
+                      className={cn('rounded-full border px-2.5 py-1 text-[11px] transition-colors', repliedFilter.has(id) ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:text-foreground')}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </FilterSection>
+
+              {/* Has Comments */}
+              <FilterSection label='Comments'>
+                <div className='flex gap-1'>
+                  {[{ id: 'all' as const, label: 'All' }, { id: 'yes' as const, label: 'With' }, { id: 'no' as const, label: 'Without' }].map(({ id, label }) => (
+                    <button key={id} type='button' onClick={() => setHasComments(id)}
+                      className={cn('rounded-full border px-2.5 py-1 text-[11px] transition-colors', hasComments === id ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:text-foreground')}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </FilterSection>
+
+              {/* Relevance */}
+              <FilterSection label={`Relevance: ${relevanceRange[0]}–${relevanceRange[1]}`}>
+                <Slider min={0} max={100} step={1} value={relevanceRange} onValueChange={(v) => setRelevanceRange(v as [number, number])} />
+              </FilterSection>
+
+              {/* Reach Score */}
+              <FilterSection label={`Reach Score: ${scoreRange[0].toLocaleString()}–${scoreRange[1].toLocaleString()}`}>
+                <Slider min={0} max={50000} step={100} value={scoreRange} onValueChange={(v) => setScoreRange(v as [number, number])} />
+              </FilterSection>
+            </div>
+          </PopoverContent>
+        </Popover>
+
         <div className='ms-auto flex items-center gap-2'>
           <Button variant='outline' size='sm' className='h-8 gap-1.5'>
             <Download className='size-3.5' />
@@ -263,148 +415,47 @@ export function ReportsPage() {
       </Header>
 
       <Main>
-        {/* ── Filter Bar (mock keyword/relevance) ────────────────────────── */}
-        <div className='mb-4 flex flex-wrap items-center gap-2'>
-          {/* Keyword multi-select */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <button className='inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border bg-muted/60 px-2.5 py-1 text-xs font-medium transition-colors hover:bg-muted'>
-                <Filter className='size-3' />
-                Keywords
-                {selectedKeywords.size > 0 && (
-                  <span className='flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground'>
-                    {selectedKeywords.size}
-                  </span>
-                )}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className='w-56 p-2' align='start'>
-              <div className='space-y-1'>
-                {keywordPerformance.map((kw) => (
-                  <label
-                    key={kw.keyword}
-                    className='flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent'
-                  >
-                    <Checkbox
-                      checked={selectedKeywords.has(kw.keyword)}
-                      onCheckedChange={(checked) => {
-                        setSelectedKeywords((prev) => {
-                          const next = new Set(prev)
-                          if (checked) next.add(kw.keyword)
-                          else next.delete(kw.keyword)
-                          return next
-                        })
-                      }}
-                    />
-                    <span className='truncate'>{kw.keyword}</span>
-                  </label>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-
-          {/* Relevance range slider */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <button className='inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border bg-muted/60 px-2.5 py-1 text-xs font-medium transition-colors hover:bg-muted'>
-                <Zap className='size-3' />
-                Relevance {relevanceRange[0]}–{relevanceRange[1]}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className='w-64 p-4' align='start'>
-              <div className='space-y-3'>
-                <div className='flex items-center justify-between text-xs text-muted-foreground'>
-                  <span>Min: {relevanceRange[0]}</span>
-                  <span>Max: {relevanceRange[1]}</span>
-                </div>
-                <Slider
-                  min={0}
-                  max={100}
-                  step={1}
-                  value={relevanceRange}
-                  onValueChange={(v) => setRelevanceRange(v as [number, number])}
-                />
-              </div>
-            </PopoverContent>
-          </Popover>
-
-          {/* Active filter badges */}
-          {selectedKeywords.size > 0 && (
-            Array.from(selectedKeywords).map((kw) => (
-              <span
-                key={kw}
-                className='inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary'
-              >
-                {kw}
-                <button
-                  className='ml-0.5 text-primary/60 hover:text-primary'
-                  onClick={() => setSelectedKeywords((prev) => {
-                    const next = new Set(prev)
-                    next.delete(kw)
-                    return next
-                  })}
-                >
-                  ×
-                </button>
-              </span>
-            ))
-          )}
-          {(relevanceRange[0] > 0 || relevanceRange[1] < 100) && (
-            <span className='inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary'>
-              Relevance: {relevanceRange[0]}–{relevanceRange[1]}
-              <button
-                className='ml-0.5 text-primary/60 hover:text-primary'
-                onClick={() => setRelevanceRange([0, 100])}
-              >
-                ×
-              </button>
-            </span>
-          )}
-        </div>
-
-        {/* ── Grouping Selector ──────────────────────────────────────────── */}
-        {availableGroupings.length > 1 && (
-          <div className='mb-4'>
-            <Tabs value={groupBy} onValueChange={(v) => setGroupBy(v as GroupBy)}>
-              <TabsList className='h-8'>
-                {availableGroupings.includes('hour') && (
-                  <TabsTrigger value='hour' className='h-7 text-xs'>
-                    Hour
-                  </TabsTrigger>
-                )}
-                {availableGroupings.includes('day') && (
-                  <TabsTrigger value='day' className='h-7 text-xs'>
-                    Day
-                  </TabsTrigger>
-                )}
-                {availableGroupings.includes('week') && (
-                  <TabsTrigger value='week' className='h-7 text-xs'>
-                    Week
-                  </TabsTrigger>
-                )}
-                {availableGroupings.includes('month') && (
-                  <TabsTrigger value='month' className='h-7 text-xs'>
-                    Month
-                  </TabsTrigger>
-                )}
-              </TabsList>
-            </Tabs>
+        {/* Active filter badges */}
+        {activeFilterCount > 0 && (
+          <div className='mb-4 flex flex-wrap items-center gap-1.5'>
+            {selectedPlatforms.size > 0 && (
+              <FilterBadge label={`${selectedPlatforms.size} platform${selectedPlatforms.size > 1 ? 's' : ''}`} onClear={() => setSelectedPlatforms(new Set())} />
+            )}
+            {selectedSentiments.size > 0 && (
+              <FilterBadge label={`${selectedSentiments.size} sentiment${selectedSentiments.size > 1 ? 's' : ''}`} onClear={() => setSelectedSentiments(new Set())} />
+            )}
+            {Array.from(selectedKeywords).map((kw) => (
+              <FilterBadge key={kw} label={kw} onClear={() => setSelectedKeywords((prev) => { const next = new Set(prev); next.delete(kw); return next })} />
+            ))}
+            {selectedKwTypes.size > 0 && (
+              <FilterBadge label={Array.from(selectedKwTypes).join(', ')} onClear={() => setSelectedKwTypes(new Set())} />
+            )}
+            {repliedFilter.size < 3 && (
+              <FilterBadge label={`Replied: ${Array.from(repliedFilter).join(', ')}`} onClear={() => setRepliedFilter(new Set(['not', 'auto', 'manual']))} />
+            )}
+            {hasComments !== 'all' && (
+              <FilterBadge label={`Comments: ${hasComments}`} onClear={() => setHasComments('all')} />
+            )}
+            {(relevanceRange[0] > 0 || relevanceRange[1] < 100) && (
+              <FilterBadge label={`Relevance: ${relevanceRange[0]}–${relevanceRange[1]}`} onClear={() => setRelevanceRange([0, 100])} />
+            )}
+            {(scoreRange[0] > 0 || scoreRange[1] < 50000) && (
+              <FilterBadge label={`Score: ${scoreRange[0]}–${scoreRange[1]}`} onClear={() => setScoreRange([0, 50000])} />
+            )}
           </div>
         )}
 
-        {/* ── KPI Cards ─────────────────────────────────────────────────── */}
-        <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-4'>
-          <KpiCard icon={TrendingUp} label='Total Mentions' value={summary.totalMentions} change={+12.4} dateFrom={dateFrom} dateTo={dateTo} />
-          <KpiCard icon={MessageSquare} label='Our Comments' value={summary.totalComments} change={+8.2} dateFrom={dateFrom} dateTo={dateTo} />
-          <KpiCard icon={SmilePlus} label='Our Reactions' value={summary.totalReactions} change={+23.1} dateFrom={dateFrom} dateTo={dateTo} />
-          <KpiCard icon={Radio} label='Total Reach Score' value={summary.totalReachScore} change={+18.7} dateFrom={dateFrom} dateTo={dateTo} />
-        </div>
-
         {/* ── Row 2: Platform pie + Sentiment pie ───────────────────────── */}
-        <div className='mt-4 grid gap-4 lg:grid-cols-2'>
+        <div className='grid gap-4 lg:grid-cols-2'>
           <Card>
             <CardHeader className='pb-2'>
-              <CardTitle className='text-sm'>Mentions Over Time</CardTitle>
+              <div className='flex items-center justify-between'>
+                <CardTitle className='text-sm'>Mentions Over Time</CardTitle>
+                <div className='flex items-center gap-2'>
+                  <span className='text-lg font-semibold tabular-nums'>{summary.totalMentions.toLocaleString()}</span>
+                  <ChangeBadge change={+12.4} />
+                </div>
+              </div>
               <CardDescription className='text-xs'>Breakdown by sentiment</CardDescription>
             </CardHeader>
             <CardContent className='pt-0'>
@@ -438,7 +489,13 @@ export function ReportsPage() {
 
           <Card>
             <CardHeader className='pb-2'>
-              <CardTitle className='text-sm'>Mentions by Platform</CardTitle>
+              <div className='flex items-center justify-between'>
+                <CardTitle className='text-sm'>Mentions by Platform</CardTitle>
+                <div className='flex items-center gap-2'>
+                  <span className='text-lg font-semibold tabular-nums'>{summary.totalMentions.toLocaleString()}</span>
+                  <ChangeBadge change={+12.4} />
+                </div>
+              </div>
               <CardDescription className='text-xs'>Breakdown by social network</CardDescription>
             </CardHeader>
             <CardContent className='pt-0'>
@@ -461,14 +518,9 @@ export function ReportsPage() {
                       return <span style={{ opacity }}>{value} ({total}, {pct}%)</span>
                     }}
                   />
-                  <Area type='monotone' dataKey='telegram' name='Telegram' fill='#26A5E4' stroke='#26A5E4' fillOpacity={activePlatforms.size === 0 || activePlatforms.has('telegram') ? 0.3 : 0.05} strokeOpacity={activePlatforms.size === 0 || activePlatforms.has('telegram') ? 1 : 0.3} strokeWidth={2} />
-                  <Area type='monotone' dataKey='reddit' name='Reddit' fill='#FF4500' stroke='#FF4500' fillOpacity={activePlatforms.size === 0 || activePlatforms.has('reddit') ? 0.3 : 0.05} strokeOpacity={activePlatforms.size === 0 || activePlatforms.has('reddit') ? 1 : 0.3} strokeWidth={2} />
-                  <Area type='monotone' dataKey='youtube' name='YouTube' fill='#FF0000' stroke='#FF0000' fillOpacity={activePlatforms.size === 0 || activePlatforms.has('youtube') ? 0.3 : 0.05} strokeOpacity={activePlatforms.size === 0 || activePlatforms.has('youtube') ? 1 : 0.3} strokeWidth={2} />
-                  <Area type='monotone' dataKey='x' name='X' fill='#1DA1F2' stroke='#1DA1F2' fillOpacity={activePlatforms.size === 0 || activePlatforms.has('x') ? 0.3 : 0.05} strokeOpacity={activePlatforms.size === 0 || activePlatforms.has('x') ? 1 : 0.3} strokeWidth={2} />
-                  <Area type='monotone' dataKey='instagram' name='Instagram' fill='#E4405F' stroke='#E4405F' fillOpacity={activePlatforms.size === 0 || activePlatforms.has('instagram') ? 0.3 : 0.05} strokeOpacity={activePlatforms.size === 0 || activePlatforms.has('instagram') ? 1 : 0.3} strokeWidth={2} />
-                  <Area type='monotone' dataKey='facebook' name='Facebook' fill='#1877F2' stroke='#1877F2' fillOpacity={activePlatforms.size === 0 || activePlatforms.has('facebook') ? 0.3 : 0.05} strokeOpacity={activePlatforms.size === 0 || activePlatforms.has('facebook') ? 1 : 0.3} strokeWidth={2} />
-                  <Area type='monotone' dataKey='tiktok' name='TikTok' fill='#EE1D52' stroke='#EE1D52' fillOpacity={activePlatforms.size === 0 || activePlatforms.has('tiktok') ? 0.3 : 0.05} strokeOpacity={activePlatforms.size === 0 || activePlatforms.has('tiktok') ? 1 : 0.3} strokeWidth={2} />
-                  <Area type='monotone' dataKey='web' name='Web' fill='#6B7280' stroke='#6B7280' fillOpacity={activePlatforms.size === 0 || activePlatforms.has('web') ? 0.3 : 0.05} strokeOpacity={activePlatforms.size === 0 || activePlatforms.has('web') ? 1 : 0.3} strokeWidth={2} />
+                  {Object.entries(CHART_PLATFORM_COLORS).map(([key, color]) => (
+                    <Area key={key} type='monotone' dataKey={key} name={key.charAt(0).toUpperCase() + key.slice(1)} fill={color} stroke={color} fillOpacity={activePlatforms.size === 0 || activePlatforms.has(key) ? 0.3 : 0.05} strokeOpacity={activePlatforms.size === 0 || activePlatforms.has(key) ? 1 : 0.3} strokeWidth={2} />
+                  ))}
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
@@ -478,7 +530,13 @@ export function ReportsPage() {
         {/* ── Row 3: Reach Score by Platform ────────────────────────────── */}
         <Card className='mt-4'>
           <CardHeader className='pb-2'>
-            <CardTitle className='text-sm'>Reach Score by Platform</CardTitle>
+            <div className='flex items-center justify-between'>
+              <CardTitle className='text-sm'>Reach Score by Platform</CardTitle>
+              <div className='flex items-center gap-2'>
+                <span className='text-lg font-semibold tabular-nums'>{summary.totalReachScore.toLocaleString()}</span>
+                <ChangeBadge change={+18.7} />
+              </div>
+            </div>
             <CardDescription className='text-xs'>Total reach score breakdown by social network</CardDescription>
           </CardHeader>
           <CardContent className='pt-0'>
@@ -501,14 +559,36 @@ export function ReportsPage() {
                     return <span style={{ opacity }}>{value} ({total.toLocaleString()}, {pct}%)</span>
                   }}
                 />
-                <Area type='monotone' dataKey='telegram' name='Telegram' fill='#26A5E4' stroke='#26A5E4' fillOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has('telegram') ? 0.3 : 0.05} strokeOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has('telegram') ? 1 : 0.3} strokeWidth={2} />
-                <Area type='monotone' dataKey='reddit' name='Reddit' fill='#FF4500' stroke='#FF4500' fillOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has('reddit') ? 0.3 : 0.05} strokeOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has('reddit') ? 1 : 0.3} strokeWidth={2} />
-                <Area type='monotone' dataKey='youtube' name='YouTube' fill='#FF0000' stroke='#FF0000' fillOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has('youtube') ? 0.3 : 0.05} strokeOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has('youtube') ? 1 : 0.3} strokeWidth={2} />
-                <Area type='monotone' dataKey='x' name='X' fill='#1DA1F2' stroke='#1DA1F2' fillOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has('x') ? 0.3 : 0.05} strokeOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has('x') ? 1 : 0.3} strokeWidth={2} />
-                <Area type='monotone' dataKey='instagram' name='Instagram' fill='#E4405F' stroke='#E4405F' fillOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has('instagram') ? 0.3 : 0.05} strokeOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has('instagram') ? 1 : 0.3} strokeWidth={2} />
-                <Area type='monotone' dataKey='facebook' name='Facebook' fill='#1877F2' stroke='#1877F2' fillOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has('facebook') ? 0.3 : 0.05} strokeOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has('facebook') ? 1 : 0.3} strokeWidth={2} />
-                <Area type='monotone' dataKey='tiktok' name='TikTok' fill='#EE1D52' stroke='#EE1D52' fillOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has('tiktok') ? 0.3 : 0.05} strokeOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has('tiktok') ? 1 : 0.3} strokeWidth={2} />
-                <Area type='monotone' dataKey='web' name='Web' fill='#6B7280' stroke='#6B7280' fillOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has('web') ? 0.3 : 0.05} strokeOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has('web') ? 1 : 0.3} strokeWidth={2} />
+                {Object.entries(CHART_PLATFORM_COLORS).map(([key, color]) => (
+                  <Area key={key} type='monotone' dataKey={key} name={key.charAt(0).toUpperCase() + key.slice(1)} fill={color} stroke={color} fillOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has(key) ? 0.3 : 0.05} strokeOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has(key) ? 1 : 0.3} strokeWidth={2} />
+                ))}
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* ── Comments Count (Auto vs Manual) ───────────────────────────── */}
+        <Card className='mt-4'>
+          <CardHeader className='pb-2'>
+            <div className='flex items-center justify-between'>
+              <CardTitle className='text-sm'>Comments Count</CardTitle>
+              <div className='flex items-center gap-2'>
+                <span className='text-lg font-semibold tabular-nums'>{totalComments.toLocaleString()}</span>
+                <ChangeBadge change={+8.2} />
+              </div>
+            </div>
+            <CardDescription className='text-xs'>Auto vs manual comments over time</CardDescription>
+          </CardHeader>
+          <CardContent className='pt-0'>
+            <ResponsiveContainer width='100%' height={220}>
+              <AreaChart data={aggregatedActivity}>
+                <CartesianGrid strokeDasharray='3 3' className='stroke-border' />
+                <XAxis dataKey='date' tick={{ fontSize: 10 }} interval='preserveStartEnd' className='fill-muted-foreground' />
+                <YAxis tick={{ fontSize: 10 }} className='fill-muted-foreground' allowDecimals={false} width={30} />
+                <RTooltip contentStyle={TOOLTIP_STYLE} wrapperStyle={TOOLTIP_WRAPPER_STYLE} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Area type='monotone' dataKey='auto' name='Auto' fill='#8B5CF6' stroke='#8B5CF6' fillOpacity={0.3} strokeWidth={2} />
+                <Area type='monotone' dataKey='manual' name='Manual' fill='#06B6D4' stroke='#06B6D4' fillOpacity={0.3} strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
@@ -703,57 +783,41 @@ export function ReportsPage() {
   )
 }
 
-// ─── KPI Card ────────────────────────────────────────────────────────────────
 
-function KpiCard({
-  icon: Icon,
-  label,
-  value,
-  change,
-  dateFrom,
-  dateTo,
-}: {
-  icon: React.ElementType
-  label: string
-  value: number | string
-  change: number
-  dateFrom: Date
-  dateTo: Date
-}) {
+// ─── Change Badge ────────────────────────────────────────────────────────────
+
+function ChangeBadge({ change }: { change: number }) {
   const up = change >= 0
-  
-  // Calculate previous period dates
-  const daysDiff = differenceInDays(dateTo, dateFrom)
-  const prevDateTo = subDays(dateFrom, 1)
-  const prevDateFrom = subDays(prevDateTo, daysDiff)
-  
   return (
-    <Card>
-      <CardContent className='flex items-center gap-4 p-4'>
-        <div className='flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10'>
-          <Icon className='size-5 text-primary' />
-        </div>
-        <div className='min-w-0 flex-1'>
-          <p className='text-xs text-muted-foreground'>{label}</p>
-          <p className='text-xl font-semibold tabular-nums'>{typeof value === 'number' ? value.toLocaleString() : value}</p>
-        </div>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Badge variant='outline' className={cn('gap-0.5 text-[10px] cursor-help', up ? 'text-green-600 border-green-500/30' : 'text-red-600 border-red-500/30')}>
-              {up ? <ArrowUpRight className='!size-3' /> : <ArrowDownRight className='!size-3' />}
-              {Math.abs(change)}%
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent className='text-xs'>
-            <div className='space-y-1'>
-              <div>Compared to previous period</div>
-              <div className='text-[10px] text-muted-foreground'>
-                {format(prevDateFrom, 'MMM d')} – {format(prevDateTo, 'MMM d, yyyy')}
-              </div>
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </CardContent>
-    </Card>
+    <Badge
+      variant='outline'
+      className={cn(
+        'gap-0.5 text-[10px]',
+        up ? 'text-green-600 border-green-500/30' : 'text-red-600 border-red-500/30'
+      )}
+    >
+      {up ? <ArrowUpRight className='!size-3' /> : <ArrowDownRight className='!size-3' />}
+      {Math.abs(change)}%
+    </Badge>
+  )
+}
+
+// ─── Filter Helpers ──────────────────────────────────────────────────────────
+
+function FilterSection({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className='mb-1.5 text-xs font-medium text-muted-foreground'>{label}</p>
+      {children}
+    </div>
+  )
+}
+
+function FilterBadge({ label, onClear }: { label: string; onClear: () => void }) {
+  return (
+    <span className='inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary'>
+      {label}
+      <button className='ml-0.5 text-primary/60 hover:text-primary' onClick={onClear}>×</button>
+    </span>
   )
 }

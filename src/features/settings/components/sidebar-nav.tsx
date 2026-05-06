@@ -1,4 +1,4 @@
-import { useState, type JSX } from 'react'
+import { type JSX } from 'react'
 import { useLocation, useNavigate, Link } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
@@ -22,19 +22,20 @@ type SidebarNavProps = React.HTMLAttributes<HTMLElement> & {
 export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const [val, setVal] = useState(pathname ?? '/settings')
+
+  // Determine active item: exact match or fallback to first item
+  const activeHref = items.find((item) => pathname === item.href)?.href ?? items[0]?.href ?? ''
 
   const handleSelect = (e: string) => {
-    setVal(e)
     navigate({ to: e })
   }
 
   return (
     <>
       <div className='p-1 md:hidden'>
-        <Select value={val} onValueChange={handleSelect}>
+        <Select value={activeHref} onValueChange={handleSelect}>
           <SelectTrigger className='h-12 sm:w-48'>
-            <SelectValue placeholder='Theme' />
+            <SelectValue placeholder='Select tab' />
           </SelectTrigger>
           <SelectContent>
             {items.map((item) => (
@@ -67,7 +68,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
               to={item.href}
               className={cn(
                 buttonVariants({ variant: 'ghost' }),
-                pathname === item.href
+                (pathname === item.href || (item.href === items[0]?.href && !items.some((i) => pathname === i.href)))
                   ? 'bg-muted hover:bg-accent'
                   : 'hover:bg-accent hover:underline',
                 'justify-start'

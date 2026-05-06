@@ -44,12 +44,32 @@ export const reachScoreByPlatformByHour = hours72.map((h) => ({
 }))
 
 // ─── Our Activity (comments + reactions per day) ─────────────────────────────
-export const activityByDay = days30.map((d) => ({
-  date: format(d, 'yyyy-MM-dd'), // ISO format for aggregation
-  dateLabel: format(d, 'MMM d'), // Display format
-  comments: Math.floor(Math.random() * 18 + 2),
-  reactions: Math.floor(Math.random() * 35 + 5),
-}))
+export const activityByDay = days30.map((d) => {
+  const auto = Math.floor(Math.random() * 14 + 2)
+  const manual = Math.floor(Math.random() * 6 + 1)
+  return {
+    date: format(d, 'yyyy-MM-dd'), // ISO format for aggregation
+    dateLabel: format(d, 'MMM d'), // Display format
+    auto,
+    manual,
+    comments: auto + manual,
+    reactions: Math.floor(Math.random() * 35 + 5),
+  }
+})
+
+// Generate hourly activity data for last 3 days
+export const activityByHour = hours72.map((h) => {
+  const auto = Math.floor(Math.random() * 5 + 1)
+  const manual = Math.floor(Math.random() * 3)
+  return {
+    date: format(h, 'yyyy-MM-dd HH:mm'),
+    dateLabel: format(h, 'MMM d HH:mm'),
+    auto,
+    manual,
+    comments: auto + manual,
+    reactions: Math.floor(Math.random() * 10 + 2),
+  }
+})
 
 // ─── Mentions over time ──────────────────────────────────────────────────────
 export const mentionsByDay = days30.map((d) => ({

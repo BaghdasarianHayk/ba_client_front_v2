@@ -72,8 +72,8 @@ export function KeywordSettings() {
         </div>
       </Header>
 
-      <Main fixed>
-        <div className='flex flex-1 flex-col overflow-y-auto'>
+      <Main>
+        <div className='flex flex-1 flex-col'>
           {/* General is always visible at the top */}
           <div className='mb-6'>
             <KeywordGeneral />
@@ -83,11 +83,11 @@ export function KeywordSettings() {
           {!isNew && (
             <>
               <Separator className='mb-4' />
-              <div className='flex flex-1 flex-col space-y-2 overflow-hidden md:space-y-2 lg:flex-row lg:space-y-0 lg:space-x-12'>
+              <div className='flex flex-1 flex-col space-y-2 md:space-y-2 lg:flex-row lg:space-y-0 lg:space-x-12'>
                 <aside className='top-0 lg:sticky lg:w-1/5'>
                   <SidebarNav items={sidebarNavItems} />
                 </aside>
-                <div className='flex w-full overflow-y-hidden p-1'>
+                <div className='flex w-full p-1'>
                   {isGeneralTab ? <KeywordMonitoring /> : <Outlet />}
                 </div>
               </div>

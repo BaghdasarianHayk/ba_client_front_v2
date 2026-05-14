@@ -261,8 +261,17 @@ export function HelpCenter() {
 
   return (
     <>
-      <Header>
+      <Header fixed>
         <h1 className='text-sm font-semibold'>Help Center</h1>
+        <div className='relative ms-4 hidden flex-1 sm:block'>
+          <Search className='absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground' />
+          <Input
+            placeholder='Search…'
+            className='h-8 max-w-xs pl-8'
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
         <div className='ms-auto flex items-center gap-2'>
           <ThemeSwitch />
           <ProfileDropdown />
@@ -271,17 +280,8 @@ export function HelpCenter() {
 
       <Main>
         <div className='mx-auto max-w-3xl'>
-          <div className='mb-6'>
-            <h2 className='text-lg font-semibold tracking-tight'>
-              Help Center
-            </h2>
-            <p className='mt-0.5 text-sm text-muted-foreground'>
-              Quick answers about Brand Advocate features.
-            </p>
-          </div>
-
-          {/* Search */}
-          <div className='relative mb-6'>
+          {/* Mobile search */}
+          <div className='relative mb-6 sm:hidden'>
             <Search className='absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground' />
             <Input
               placeholder='Search…'

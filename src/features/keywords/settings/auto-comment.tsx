@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { InfoTooltip } from '@/components/info-tooltip'
 import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { KeywordService } from '@/services/api/keyword-service'
@@ -107,7 +108,10 @@ export function KeywordAutoComment() {
           {/* Comment count range */}
           <div className='mt-4 space-y-2'>
             <div className='flex items-center justify-between'>
-              <Label className='text-xs'>Bot comments per post</Label>
+              <div className='flex items-center gap-1.5'>
+                <Label className='text-xs'>Bot comments per post</Label>
+                <InfoTooltip content='Limits how many automated comments the bot can leave on a single post. Use a range to add natural variation. For example, 1–3 means the bot will comment between 1 and 3 times per post.' />
+              </div>
               <span className='text-sm font-medium'>
                 {countRange[0]} – {countRange[1]}
               </span>

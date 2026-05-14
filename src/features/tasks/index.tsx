@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/tooltip'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { PageDescription } from '@/components/page-description'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { PlatformIcon, type PlatformId } from '@/components/platform-icon'
@@ -220,6 +221,11 @@ export function Tasks() {
       </Header>
 
       <Main>
+        <PageDescription
+          summary='Task History shows all automated and manual actions: comments, replies, and reactions posted by the system. Track their status and see results.'
+          className='mb-4'
+        />
+
         {/* Filters — always visible */}
         <div className='mb-4 flex flex-wrap items-center gap-2'>
           {/* Status pills */}
@@ -300,13 +306,15 @@ export function Tasks() {
 
         {/* Empty */}
         {!loading && tasks.length === 0 && (
-          <div className='flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-muted-foreground'>
-            <BotMessageSquare className='mb-3 size-10 opacity-40' />
-            <p className='text-sm'>No tasks found</p>
-            <p className='mt-1 text-xs'>
+          <div className='flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center'>
+            <div className='mb-4 flex size-14 items-center justify-center rounded-full bg-muted'>
+              <BotMessageSquare className='size-7 text-muted-foreground' />
+            </div>
+            <h3 className='text-base font-semibold'>No tasks found</h3>
+            <p className='mt-1 max-w-sm text-sm text-muted-foreground'>
               {status !== 'all' || dateFrom
-                ? 'Try different filters'
-                : 'Tasks appear when you post comments, replies, or reactions'}
+                ? 'No tasks match your current filters. Try changing the status or date range.'
+                : 'Tasks appear here when you post comments, replies, or reactions — either manually or via auto actions.'}
             </p>
           </div>
         )}

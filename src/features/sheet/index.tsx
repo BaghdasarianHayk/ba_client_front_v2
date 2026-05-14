@@ -6,6 +6,7 @@ import {
   AtSign,
   CalendarIcon,
   Filter,
+  KeyRound,
   Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -494,9 +495,14 @@ export function Mentions() {
 
       <Main>
         {!projectId && !isLoading && (
-          <div className='flex flex-col items-center justify-center py-16 text-muted-foreground'>
-            <AtSign className='mb-3 size-10 opacity-40' />
-            <p className='text-sm'>Select a project to view mentions.</p>
+          <div className='flex flex-col items-center justify-center py-16 text-center'>
+            <div className='mb-4 flex size-14 items-center justify-center rounded-full bg-muted'>
+              <AtSign className='size-7 text-muted-foreground' />
+            </div>
+            <h3 className='text-base font-semibold'>Select a project</h3>
+            <p className='mt-1 max-w-sm text-sm text-muted-foreground'>
+              Choose a project from the sidebar to view its social media mentions and comments.
+            </p>
           </div>
         )}
 
@@ -543,9 +549,28 @@ export function Mentions() {
         )}
 
         {!isLoading && projectId && posts.length === 0 && (
-          <div className='flex flex-col items-center justify-center py-16 text-muted-foreground'>
-            <AtSign className='mb-3 size-10 opacity-40' />
-            <p className='text-sm'>No mentions found.</p>
+          <div className='flex flex-col items-center justify-center py-16 text-center'>
+            <div className='mb-4 flex size-14 items-center justify-center rounded-full bg-muted'>
+              <AtSign className='size-7 text-muted-foreground' />
+            </div>
+            <h3 className='text-base font-semibold'>No mentions found</h3>
+            <p className='mt-1 max-w-sm text-sm text-muted-foreground'>
+              No posts match your current filters. Try adjusting the date range, removing filters, or adding new keywords.
+            </p>
+            <ul className='mt-4 space-y-1 text-start text-xs text-muted-foreground'>
+              <li className='flex items-start gap-2'>
+                <span className='mt-1 size-1 shrink-0 rounded-full bg-muted-foreground/50' />
+                <span>Expand the date range to include older posts</span>
+              </li>
+              <li className='flex items-start gap-2'>
+                <span className='mt-1 size-1 shrink-0 rounded-full bg-muted-foreground/50' />
+                <span>Remove sentiment or platform filters</span>
+              </li>
+              <li className='flex items-start gap-2'>
+                <span className='mt-1 size-1 shrink-0 rounded-full bg-muted-foreground/50' />
+                <span>Add more keywords in the Keywords section</span>
+              </li>
+            </ul>
           </div>
         )}
 

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { InfoTooltip } from '@/components/info-tooltip'
 import { ContentSection } from '@/features/settings/components/content-section'
 import { PlatformIcon, type PlatformId } from '@/components/platform-icon'
 import { useProjectStore } from '@/stores/project-store'
@@ -137,10 +138,13 @@ export function KeywordGeneral() {
 
         {/* Excluded */}
         <div className='space-y-1.5'>
-          <Label className='text-xs'>
-            Excluded terms{' '}
-            <span className='font-normal text-muted-foreground'>(optional)</span>
-          </Label>
+          <div className='flex items-center gap-1.5'>
+            <Label className='text-xs'>
+              Excluded terms{' '}
+              <span className='font-normal text-muted-foreground'>(optional)</span>
+            </Label>
+            <InfoTooltip content='Posts containing these terms will be ignored even if they match your keyword. Useful for filtering out irrelevant results. Example: if your keyword is "Apple", exclude "apple pie" or "apple cider".' />
+          </div>
           <div className='flex gap-1.5'>
             <Input
               value={excludeInput}

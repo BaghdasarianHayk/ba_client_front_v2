@@ -60,6 +60,7 @@ import {
 } from '@/components/ui/table'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { PageDescription } from '@/components/page-description'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { useProjectStore } from '@/stores/project-store'
@@ -235,6 +236,12 @@ export function KnowledgeBasePage() {
       </Header>
 
       <Main>
+        <PageDescription
+          summary='The Knowledge Base stores documents that the AI uses to generate relevant replies. Upload FAQs, product guides, or brand guidelines to improve response quality.'
+          details='Uploaded files are analyzed and indexed. The AI references this knowledge when writing auto-replies, ensuring responses are accurate and on-brand. Assign files to a keyword type (Brand, Competitor, General) to control which context is used.'
+          className='mb-4'
+        />
+
         {/* Drop zone */}
         <div
           onDragOver={onDragOver}

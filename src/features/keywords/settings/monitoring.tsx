@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { InfoTooltip } from '@/components/info-tooltip'
 import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { KeywordService } from '@/services/api/keyword-service'
@@ -74,7 +75,10 @@ export function KeywordMonitoring() {
         {/* Min relevance */}
         <div className='space-y-2'>
           <div className='flex items-center justify-between'>
-            <Label className='text-xs'>Minimum relevance to show</Label>
+            <div className='flex items-center gap-1.5'>
+              <Label className='text-xs'>Minimum relevance to show</Label>
+              <InfoTooltip content='Relevance is an AI-calculated score (0-100%) showing how closely a post matches your keyword and brand context. Higher values mean stricter filtering.' />
+            </div>
             <span className='text-sm font-medium'>{threshold}%</span>
           </div>
           <Slider
@@ -91,10 +95,13 @@ export function KeywordMonitoring() {
 
         {/* Filtering prompt */}
         <div className='space-y-1.5'>
-          <Label className='text-xs'>
-            Filtering prompt{' '}
-            <span className='font-normal text-muted-foreground'>(optional)</span>
-          </Label>
+          <div className='flex items-center gap-1.5'>
+            <Label className='text-xs'>
+              Filtering prompt{' '}
+              <span className='font-normal text-muted-foreground'>(optional)</span>
+            </Label>
+            <InfoTooltip content='Give the AI extra instructions on how to judge relevance. For example: "Ignore posts about crypto mining, only show posts about crypto wallets" or "Focus on posts asking questions about our product."' />
+          </div>
           <Textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}

@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { PageDescription } from '@/components/page-description'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { DateSeparator } from '@/components/date-separator'
@@ -203,6 +204,12 @@ export function TrackedPostsPage() {
       </Header>
 
       <Main>
+        <PageDescription
+          summary='Tracked Posts let you monitor comments on specific posts in real-time. Set up auto-reply and auto-react rules for each post individually.'
+          details='Unlike keywords (which find new posts), tracked posts focus on monitoring comments on posts you already know about. Useful for your own posts or viral discussions.'
+          className='mb-4'
+        />
+
         {/* Loading */}
         {loading && (
           <div className='space-y-4'>
@@ -225,20 +232,38 @@ export function TrackedPostsPage() {
 
         {/* Empty */}
         {!loading && trackedPosts.length === 0 && (
-          <div className='flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-muted-foreground'>
-            <Rss className='mb-3 size-10 opacity-40' />
-            <p className='text-sm'>No tracked posts yet</p>
-            <p className='mt-1 text-xs'>
-              Track a post to monitor comments and automate replies
+          <div className='flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center'>
+            <div className='mb-4 flex size-14 items-center justify-center rounded-full bg-muted'>
+              <Rss className='size-7 text-muted-foreground' />
+            </div>
+            <h3 className='text-base font-semibold'>No tracked posts yet</h3>
+            <p className='mt-1 max-w-sm text-sm text-muted-foreground'>
+              Track specific posts to monitor their comments in real-time and set up automated replies and reactions.
             </p>
-            <Button
-              size='sm'
-              className='mt-3 gap-1.5'
-              onClick={() => navigate({ to: '/tracked-posts/new' })}
-            >
-              <Plus className='size-3.5' />
-              Track Post
-            </Button>
+            <ul className='mt-4 space-y-1 text-start text-xs text-muted-foreground'>
+              <li className='flex items-start gap-2'>
+                <span className='mt-1 size-1 shrink-0 rounded-full bg-muted-foreground/50' />
+                <span>Paste any Telegram post URL to start tracking</span>
+              </li>
+              <li className='flex items-start gap-2'>
+                <span className='mt-1 size-1 shrink-0 rounded-full bg-muted-foreground/50' />
+                <span>Or click "Track Post" on any mention in the feed</span>
+              </li>
+              <li className='flex items-start gap-2'>
+                <span className='mt-1 size-1 shrink-0 rounded-full bg-muted-foreground/50' />
+                <span>Configure auto-reply rules per tracked post</span>
+              </li>
+            </ul>
+            {canEdit && (
+              <Button
+                size='sm'
+                className='mt-5 gap-1.5'
+                onClick={() => navigate({ to: '/tracked-posts/new' })}
+              >
+                <Plus className='size-3.5' />
+                Track Post
+              </Button>
+            )}
           </div>
         )}
 

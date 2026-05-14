@@ -41,6 +41,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { PlatformIcon } from '@/components/platform-icon'
+import { InfoTooltip } from '@/components/info-tooltip'
 import { PosterService, POSTER_TASK_COMPLETED_EVENT, type PosterPlatform } from '@/services/api/poster-service'
 import { highlightKeyword } from '@/lib/highlight'
 import { useViewerMode } from '@/hooks/use-viewer-mode'

@@ -52,6 +52,7 @@ import {
 } from '@/components/ui/tooltip'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { PageDescription } from '@/components/page-description'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { PlatformIcon, type PlatformId } from '@/components/platform-icon'
@@ -415,6 +416,12 @@ export function ReportsPage() {
       </Header>
 
       <Main>
+        <PageDescription
+          summary='Reports show analytics for your mentions over time: volume trends, sentiment breakdown, platform distribution, and reach scores.'
+          details='Use the date range and grouping options in the header to adjust the view. Filter by platform, sentiment, or relevance to focus on specific segments. Export data from Settings → Access & Export.'
+          className='mb-4'
+        />
+
         {/* Active filter badges */}
         {activeFilterCount > 0 && (
           <div className='mb-4 flex flex-wrap items-center gap-1.5'>

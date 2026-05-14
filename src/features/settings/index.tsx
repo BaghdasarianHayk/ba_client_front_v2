@@ -57,6 +57,9 @@ export function Settings() {
           <p className='text-muted-foreground'>
             Manage your project configuration, access, and preferences.
           </p>
+          <p className='text-xs text-muted-foreground/70'>
+            Changes here affect how the AI generates replies, who can access this project, and how data is displayed.
+          </p>
         </div>
         <Separator className='my-4 lg:my-6' />
         <div className='flex flex-1 flex-col space-y-2 overflow-hidden md:space-y-2 lg:flex-row lg:space-y-0 lg:space-x-12'>

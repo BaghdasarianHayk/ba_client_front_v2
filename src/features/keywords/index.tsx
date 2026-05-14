@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import {
+  KeyRound,
   Loader2,
   Plus,
   RefreshCw,
@@ -18,6 +19,7 @@ import {
 } from '@/components/ui/collapsible'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { PageDescription } from '@/components/page-description'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { useProjectStore } from '@/stores/project-store'
@@ -237,6 +239,12 @@ export function KeywordsPage() {
       </Header>
 
       <Main>
+        <PageDescription
+          summary='Keywords are search terms the system monitors across social platforms. When someone mentions your keyword, it appears in the Mentions feed.'
+          details='Add your brand name, product names, or competitor keywords. Each keyword can be configured with auto-reply and auto-react rules. Use "Brand" type for your own brand, "Competitor" for rivals, and "General" for industry topics.'
+          className='mb-4'
+        />
+
         {/* AI Suggestions */}
         <Collapsible open={suggestionsOpen} onOpenChange={setSuggestionsOpen}>
           <div className='mb-4 rounded-lg border bg-card'>
@@ -317,19 +325,38 @@ export function KeywordsPage() {
             ))}
           </div>
         ) : filtered.length === 0 && keywords.length === 0 ? (
-          <div className='flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-muted-foreground'>
-            <p className='text-sm'>No keywords yet</p>
-            <p className='mt-1 text-xs'>
-              Add your first keyword to start monitoring
+          <div className='flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center'>
+            <div className='mb-4 flex size-14 items-center justify-center rounded-full bg-muted'>
+              <KeyRound className='size-7 text-muted-foreground' />
+            </div>
+            <h3 className='text-base font-semibold'>No keywords yet</h3>
+            <p className='mt-1 max-w-sm text-sm text-muted-foreground'>
+              Keywords define what the system searches for across social platforms. Add your brand name, product names, or competitor keywords.
             </p>
-            <Button
-              size='sm'
-              className='mt-3 gap-1.5'
-              onClick={handleAdd}
-            >
-              <Plus className='size-3.5' />
-              Add Keyword
-            </Button>
+            <ul className='mt-4 space-y-1 text-start text-xs text-muted-foreground'>
+              <li className='flex items-start gap-2'>
+                <span className='mt-1 size-1 shrink-0 rounded-full bg-muted-foreground/50' />
+                <span>Use your brand name to find mentions about you</span>
+              </li>
+              <li className='flex items-start gap-2'>
+                <span className='mt-1 size-1 shrink-0 rounded-full bg-muted-foreground/50' />
+                <span>Add competitor names to monitor their mentions</span>
+              </li>
+              <li className='flex items-start gap-2'>
+                <span className='mt-1 size-1 shrink-0 rounded-full bg-muted-foreground/50' />
+                <span>Use AI Suggestions above for keyword ideas</span>
+              </li>
+            </ul>
+            {canEdit && (
+              <Button
+                size='sm'
+                className='mt-5 gap-1.5'
+                onClick={handleAdd}
+              >
+                <Plus className='size-3.5' />
+                Add Keyword
+              </Button>
+            )}
           </div>
         ) : (
           <KeywordsTable

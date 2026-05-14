@@ -16,6 +16,7 @@ import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { PageDescription } from '@/components/page-description'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { PlatformIcon } from '@/components/platform-icon'
@@ -159,6 +160,11 @@ export function FollowingsPage() {
       </Header>
 
       <Main fixed>
+        <PageDescription
+          summary='Followings are Telegram channels you monitor. New posts from followed channels appear in your Mentions feed automatically.'
+          details='Follow channels relevant to your brand or industry. You can configure auto-reply and auto-react rules for each channel separately.'
+          className='mb-3'
+        />
         <section className='flex h-full gap-6'>
           {/* ── Left panel ──────────────────────────────────────────────── */}
           <div className='flex w-full flex-col gap-2 sm:w-56 lg:w-72 2xl:w-80'>
@@ -344,7 +350,10 @@ export function FollowingsPage() {
                 <div className='space-y-2 text-center'>
                   <h1 className='text-xl font-semibold'>Your followings</h1>
                   <p className='text-sm text-muted-foreground'>
-                    Select a following to view its posts.
+                    Select a following from the list to view its posts and configure monitoring settings.
+                  </p>
+                  <p className='text-xs text-muted-foreground/70'>
+                    Tip: Click the gear icon to set up auto-reply and auto-react rules for each channel.
                   </p>
                 </div>
               </div>

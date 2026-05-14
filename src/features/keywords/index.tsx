@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/collapsible'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { EmptyState } from '@/components/empty-state'
 import { PageDescription } from '@/components/page-description'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
@@ -240,8 +241,10 @@ export function KeywordsPage() {
 
       <Main>
         <PageDescription
+          id='keywords-page'
           summary='Keywords are search terms the system monitors across social platforms. When someone mentions your keyword, it appears in the Mentions feed.'
           details='Add your brand name, product names, or competitor keywords. Each keyword can be configured with auto-reply and auto-react rules. Use "Brand" type for your own brand, "Competitor" for rivals, and "General" for industry topics.'
+          helpAnchor='keywords'
           className='mb-4'
         />
 
@@ -325,39 +328,17 @@ export function KeywordsPage() {
             ))}
           </div>
         ) : filtered.length === 0 && keywords.length === 0 ? (
-          <div className='flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center'>
-            <div className='mb-4 flex size-14 items-center justify-center rounded-full bg-muted'>
-              <KeyRound className='size-7 text-muted-foreground' />
-            </div>
-            <h3 className='text-base font-semibold'>No keywords yet</h3>
-            <p className='mt-1 max-w-sm text-sm text-muted-foreground'>
-              Keywords define what the system searches for across social platforms. Add your brand name, product names, or competitor keywords.
-            </p>
-            <ul className='mt-4 space-y-1 text-start text-xs text-muted-foreground'>
-              <li className='flex items-start gap-2'>
-                <span className='mt-1 size-1 shrink-0 rounded-full bg-muted-foreground/50' />
-                <span>Use your brand name to find mentions about you</span>
-              </li>
-              <li className='flex items-start gap-2'>
-                <span className='mt-1 size-1 shrink-0 rounded-full bg-muted-foreground/50' />
-                <span>Add competitor names to monitor their mentions</span>
-              </li>
-              <li className='flex items-start gap-2'>
-                <span className='mt-1 size-1 shrink-0 rounded-full bg-muted-foreground/50' />
-                <span>Use AI Suggestions above for keyword ideas</span>
-              </li>
-            </ul>
-            {canEdit && (
-              <Button
-                size='sm'
-                className='mt-5 gap-1.5'
-                onClick={handleAdd}
-              >
-                <Plus className='size-3.5' />
-                Add Keyword
-              </Button>
-            )}
-          </div>
+          <EmptyState
+            icon={KeyRound}
+            title='No keywords yet'
+            description='Keywords define what the system searches for across social platforms. Add your brand name, product names, or competitor keywords.'
+            tips={[
+              'Use your brand name to find mentions about you',
+              'Add competitor names to monitor their mentions',
+              'Use AI Suggestions above for keyword ideas',
+            ]}
+            action={canEdit ? { label: 'Add Keyword', onClick: handleAdd, icon: Plus } : undefined}
+          />
         ) : (
           <KeywordsTable
             keywords={filtered}

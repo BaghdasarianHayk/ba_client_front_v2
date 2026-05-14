@@ -1,60 +1,84 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, Info } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import { Lightbulb, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type PageDescriptionProps = {
+  /** Unique key for localStorage persistence (e.g. 'keywords-page') */
+  id: string
   /** Short one-line description always visible */
   summary: string
   /** Optional longer explanation shown on expand */
   details?: string | React.ReactNode
+  /** Optional Help Center section anchor (e.g. 'keywords') */
+  helpAnchor?: string
   /** Optional className */
   className?: string
 }
 
+const STORAGE_PREFIX = 'ba_hint_dismissed_'
+
 /**
- * A collapsible page-level description block.
- * Shows a brief summary with an optional expandable section for more details.
- * Helps users understand what a page does, especially on first visit.
+ * A dismissable page-level hint.
+ * Compact, non-intrusive, disappears permanently on dismiss.
  */
 export function PageDescription({
+  id,
   summary,
   details,
+  helpAnchor,
   className,
 }: PageDescriptionProps) {
-  const [expanded, setExpanded] = useState(false)
+  const storageKey = `${STORAGE_PREFIX}${id}`
+  const [dismissed, setDismissed] = useState(
+    () => localStorage.getItem(storageKey) === '1'
+  )
+
+  if (dismissed) return null
+
+  const handleDismiss = () => {
+    localStorage.setItem(storageKey, '1')
+    setDismissed(true)
+  }
 
   return (
     <div
       className={cn(
-        'rounded-lg border border-border/60 bg-muted/30 px-3 py-2',
+        'group relative rounded-md bg-muted/50 px-3 py-2.5',
         className
       )}
     >
-      <div className='flex items-start gap-2'>
-        <Info className='mt-0.5 size-3.5 shrink-0 text-muted-foreground/70' />
-        <div className='min-w-0 flex-1'>
+      {/* Dismiss — appears on hover, always accessible */}
+      <button
+        type='button'
+        onClick={handleDismiss}
+        className='absolute end-2 top-2 rounded-sm p-0.5 text-muted-foreground/0 transition-colors group-hover:text-muted-foreground/60 hover:!text-muted-foreground'
+        aria-label='Dismiss'
+      >
+        <X className='size-3.5' />
+      </button>
+
+      <div className='flex items-start gap-2.5 pe-6'>
+        <Lightbulb className='mt-0.5 size-3.5 shrink-0 text-amber-500/70' />
+        <div className='min-w-0 space-y-1'>
           <p className='text-xs leading-relaxed text-muted-foreground'>
             {summary}
           </p>
-          {details && expanded && (
-            <div className='mt-1.5 text-xs leading-relaxed text-muted-foreground/80'>
-              {typeof details === 'string' ? <p>{details}</p> : details}
-            </div>
+          {details && (
+            <p className='text-[11px] leading-relaxed text-muted-foreground/70'>
+              {typeof details === 'string' ? details : details}
+            </p>
+          )}
+          {helpAnchor && (
+            <Link
+              to='/help-center'
+              hash={helpAnchor}
+              className='inline-block text-[11px] font-medium text-primary/80 transition-colors hover:text-primary hover:underline'
+            >
+              Learn more →
+            </Link>
           )}
         </div>
-        {details && (
-          <button
-            type='button'
-            onClick={() => setExpanded(!expanded)}
-            className='shrink-0 rounded p-0.5 text-muted-foreground/60 transition-colors hover:text-muted-foreground'
-          >
-            {expanded ? (
-              <ChevronUp className='size-3.5' />
-            ) : (
-              <ChevronDown className='size-3.5' />
-            )}
-          </button>
-        )}
       </div>
     </div>
   )

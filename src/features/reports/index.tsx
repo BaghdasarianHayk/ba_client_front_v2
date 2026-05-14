@@ -417,8 +417,10 @@ export function ReportsPage() {
 
       <Main>
         <PageDescription
+          id='reports-page'
           summary='Reports show analytics for your mentions over time: volume trends, sentiment breakdown, platform distribution, and reach scores.'
           details='Use the date range and grouping options in the header to adjust the view. Filter by platform, sentiment, or relevance to focus on specific segments. Export data from Settings → Access & Export.'
+          helpAnchor='reports'
           className='mb-4'
         />
 

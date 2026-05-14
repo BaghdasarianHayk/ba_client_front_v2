@@ -48,6 +48,7 @@ import {
 } from '@/components/ui/tooltip'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { EmptyState } from '@/components/empty-state'
 import { PageDescription } from '@/components/page-description'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
@@ -265,8 +266,10 @@ export function AutoActionsPage() {
 
       <Main>
         <PageDescription
+          id='auto-actions-page'
           summary='A unified view of all automated actions across your keywords, followings, and tracked posts. See which items have auto-reply or auto-react enabled.'
           details='Auto actions are configured individually on each keyword, following, or tracked post. This page shows them all in one place so you can quickly see what is automated and adjust settings.'
+          helpAnchor='auto-actions'
           className='mb-4'
         />
 
@@ -299,29 +302,16 @@ export function AutoActionsPage() {
         )}
 
         {!loading && filtered.length === 0 && (
-          <div className='flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center'>
-            <div className='mb-4 flex size-14 items-center justify-center rounded-full bg-muted'>
-              <Zap className='size-7 text-muted-foreground' />
-            </div>
-            <h3 className='text-base font-semibold'>No auto actions configured</h3>
-            <p className='mt-1 max-w-sm text-sm text-muted-foreground'>
-              Auto actions appear here when you enable auto-reply or auto-react on your keywords, followings, or tracked posts.
-            </p>
-            <ul className='mt-4 space-y-1 text-start text-xs text-muted-foreground'>
-              <li className='flex items-start gap-2'>
-                <span className='mt-1 size-1 shrink-0 rounded-full bg-muted-foreground/50' />
-                <span>Go to Keywords → select a keyword → enable Auto Comment</span>
-              </li>
-              <li className='flex items-start gap-2'>
-                <span className='mt-1 size-1 shrink-0 rounded-full bg-muted-foreground/50' />
-                <span>Go to Followings → select a channel → enable Auto Reply</span>
-              </li>
-              <li className='flex items-start gap-2'>
-                <span className='mt-1 size-1 shrink-0 rounded-full bg-muted-foreground/50' />
-                <span>Go to Tracked Posts → select a post → enable Auto React</span>
-              </li>
-            </ul>
-          </div>
+          <EmptyState
+            icon={Zap}
+            title='No auto actions configured'
+            description='Auto actions appear here when you enable auto-reply or auto-react on your keywords, followings, or tracked posts.'
+            tips={[
+              'Go to Keywords → select a keyword → enable Auto Comment',
+              'Go to Followings → select a channel → enable Auto Reply',
+              'Go to Tracked Posts → select a post → enable Auto React',
+            ]}
+          />
         )}
 
         {!loading && filtered.length > 0 && (

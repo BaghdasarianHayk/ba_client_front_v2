@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { InfoTooltip } from '@/components/info-tooltip'
 import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { PostService } from '@/services/api/post-service'
@@ -100,7 +101,10 @@ export function TrackedPostAutoReply() {
 
           <div className='mt-4 space-y-2'>
             <div className='flex items-center justify-between'>
-              <Label className='text-xs'>Bot comments per post</Label>
+              <div className='flex items-center gap-1.5'>
+                <Label className='text-xs'>Bot comments per post</Label>
+                <InfoTooltip content='Limits how many automated replies the bot can leave on this post. Use a range to add natural variation.' />
+              </div>
               <span className='text-sm font-medium'>
                 {countRange[0]} – {countRange[1]}
               </span>
@@ -117,12 +121,15 @@ export function TrackedPostAutoReply() {
           </div>
 
           <div className='mt-4 space-y-1.5'>
-            <Label className='text-xs'>
-              Reply rules{' '}
-              <span className='font-normal text-muted-foreground'>
-                (optional)
-              </span>
-            </Label>
+            <div className='flex items-center gap-1.5'>
+              <Label className='text-xs'>
+                Reply rules{' '}
+                <span className='font-normal text-muted-foreground'>
+                  (optional)
+                </span>
+              </Label>
+              <InfoTooltip content='Custom instructions for the AI when writing replies to this post. Example: "Be friendly and mention our free trial" or "Answer technical questions with links to docs."' />
+            </div>
             <Textarea
               value={rules}
               onChange={(e) => setRules(e.target.value)}

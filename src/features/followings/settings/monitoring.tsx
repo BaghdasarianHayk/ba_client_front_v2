@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Textarea } from '@/components/ui/textarea'
+import { InfoTooltip } from '@/components/info-tooltip'
 import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { ChannelService } from '@/services/api/channel-service'
@@ -53,7 +54,10 @@ export function FollowingMonitoring() {
       <div className='space-y-5'>
         <div className='space-y-2'>
           <div className='flex items-center justify-between'>
-            <Label className='text-xs'>Min. relevance to show</Label>
+            <div className='flex items-center gap-1.5'>
+              <Label className='text-xs'>Min. relevance to show</Label>
+              <InfoTooltip content='Relevance is an AI score (0-100%) showing how closely a post relates to your brand. Posts below this threshold are hidden from your feed.' />
+            </div>
             <span className='text-sm font-medium'>{threshold}%</span>
           </div>
           <Slider value={[threshold]} onValueChange={([v]) => setThreshold(v)} min={0} max={100} step={1} />
@@ -63,7 +67,10 @@ export function FollowingMonitoring() {
         </div>
 
         <div className='space-y-1.5'>
-          <Label className='text-xs'>Filtering prompt <span className='font-normal text-muted-foreground'>(optional)</span></Label>
+          <div className='flex items-center gap-1.5'>
+            <Label className='text-xs'>Filtering prompt <span className='font-normal text-muted-foreground'>(optional)</span></Label>
+            <InfoTooltip content='Extra instructions for the AI when judging post relevance. Example: "Only show posts that mention our product directly, ignore general industry news."' />
+          </div>
           <Textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}

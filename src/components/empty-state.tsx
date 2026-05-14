@@ -23,8 +23,7 @@ type EmptyStateProps = {
 
 /**
  * A rich empty state component with guidance.
- * Shows icon, title, description, optional tips, and an action button.
- * Helps users understand what to do when a page/section has no data.
+ * Clean, centered layout with subtle visual hierarchy.
  */
 export function EmptyState({
   icon: Icon,
@@ -41,28 +40,30 @@ export function EmptyState({
         className
       )}
     >
-      <div className='mb-4 flex size-14 items-center justify-center rounded-full bg-muted'>
-        <Icon className='size-7 text-muted-foreground' />
+      <div className='mb-4 flex size-12 items-center justify-center rounded-full bg-muted/80'>
+        <Icon className='size-6 text-muted-foreground/70' />
       </div>
-      <h3 className='text-base font-semibold'>{title}</h3>
-      <p className='mt-1 max-w-sm text-sm text-muted-foreground'>
+      <h3 className='text-sm font-semibold'>{title}</h3>
+      <p className='mt-1.5 max-w-[320px] text-[13px] leading-relaxed text-muted-foreground'>
         {description}
       </p>
 
       {tips && tips.length > 0 && (
-        <ul className='mt-4 space-y-1 text-start text-xs text-muted-foreground'>
-          {tips.map((tip, i) => (
-            <li key={i} className='flex items-start gap-2'>
-              <span className='mt-1 size-1 shrink-0 rounded-full bg-muted-foreground/50' />
-              <span>{tip}</span>
-            </li>
-          ))}
-        </ul>
+        <div className='mt-4 rounded-md bg-muted/40 px-4 py-2.5'>
+          <ul className='space-y-1 text-start text-[11px] text-muted-foreground/80'>
+            {tips.map((tip, i) => (
+              <li key={i} className='flex items-start gap-2'>
+                <span className='mt-[5px] size-1 shrink-0 rounded-full bg-muted-foreground/40' />
+                <span>{tip}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {action && (
-        <Button className='mt-5 gap-1.5' onClick={action.onClick}>
-          {action.icon && <action.icon className='size-4' />}
+        <Button size='sm' className='mt-5 gap-1.5' onClick={action.onClick}>
+          {action.icon && <action.icon className='size-3.5' />}
           {action.label}
         </Button>
       )}

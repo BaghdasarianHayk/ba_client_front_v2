@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
+import { InfoTooltip } from '@/components/info-tooltip'
 import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { KeywordService } from '@/services/api/keyword-service'
@@ -114,7 +115,10 @@ export function KeywordAutoReact() {
           {/* Min relevance */}
           <div className='space-y-2'>
             <div className='flex items-center justify-between'>
-              <Label className='text-xs'>Min. relevance</Label>
+              <div className='flex items-center gap-1.5'>
+                <Label className='text-xs'>Min. relevance</Label>
+                <InfoTooltip content='Only react to comments with relevance above this threshold. Higher values mean fewer but more targeted reactions.' />
+              </div>
               <span className='text-sm font-medium'>{threshold}%</span>
             </div>
             <Slider value={[threshold]} onValueChange={([v]) => setThreshold(v)} min={0} max={100} step={1} />
@@ -122,7 +126,10 @@ export function KeywordAutoReact() {
 
           {/* Sentiment → Reaction mapping */}
           <div className='mt-4 space-y-2'>
-            <Label className='text-xs'>Reaction per sentiment</Label>
+            <div className='flex items-center gap-1.5'>
+              <Label className='text-xs'>Reaction per sentiment</Label>
+              <InfoTooltip content='Map each comment sentiment to a reaction. For example: set 👍 for positive comments and 👎 for negative ones. Leave empty to skip reacting to that sentiment.' />
+            </div>
             <p className='text-[11px] text-muted-foreground'>
               Choose which reaction to set for each comment sentiment.
             </p>

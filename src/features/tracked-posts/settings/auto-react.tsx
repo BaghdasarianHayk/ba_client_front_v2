@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
+import { InfoTooltip } from '@/components/info-tooltip'
 import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { PostService } from '@/services/api/post-service'
@@ -129,7 +130,10 @@ export function TrackedPostAutoReact() {
         <div className={enabled ? '' : 'pointer-events-none opacity-40'}>
           <div className='space-y-2'>
             <div className='flex items-center justify-between'>
-              <Label className='text-xs'>Min. relevance</Label>
+              <div className='flex items-center gap-1.5'>
+                <Label className='text-xs'>Min. relevance</Label>
+                <InfoTooltip content='Only react to comments with relevance above this threshold. Higher values mean fewer but more targeted reactions.' />
+              </div>
               <span className='text-sm font-medium'>{threshold}%</span>
             </div>
             <Slider
@@ -142,7 +146,10 @@ export function TrackedPostAutoReact() {
           </div>
 
           <div className='mt-4 space-y-2'>
-            <Label className='text-xs'>Reaction per sentiment</Label>
+            <div className='flex items-center gap-1.5'>
+              <Label className='text-xs'>Reaction per sentiment</Label>
+              <InfoTooltip content='Map each comment sentiment to a reaction. Leave empty to skip reacting to that sentiment type.' />
+            </div>
             <div className='mt-2 space-y-1.5'>
               {SENTIMENTS.map(({ id, label, icon: SIcon, color }) => {
                 const current = reactions[id]

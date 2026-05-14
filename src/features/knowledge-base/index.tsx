@@ -237,8 +237,10 @@ export function KnowledgeBasePage() {
 
       <Main>
         <PageDescription
+          id='knowledge-base-page'
           summary='The Knowledge Base stores documents that the AI uses to generate relevant replies. Upload FAQs, product guides, or brand guidelines to improve response quality.'
           details='Uploaded files are analyzed and indexed. The AI references this knowledge when writing auto-replies, ensuring responses are accurate and on-brand. Assign files to a keyword type (Brand, Competitor, General) to control which context is used.'
+          helpAnchor='knowledge-base'
           className='mb-4'
         />
 

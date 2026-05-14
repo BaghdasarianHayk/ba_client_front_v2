@@ -161,8 +161,10 @@ export function FollowingsPage() {
 
       <Main fixed>
         <PageDescription
+          id='followings-page'
           summary='Followings are Telegram channels you monitor. New posts from followed channels appear in your Mentions feed automatically.'
           details='Follow channels relevant to your brand or industry. You can configure auto-reply and auto-react rules for each channel separately.'
+          helpAnchor='followings'
           className='mb-3'
         />
         <section className='flex h-full gap-6'>

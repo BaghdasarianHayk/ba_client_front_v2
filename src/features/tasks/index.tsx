@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/tooltip'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { EmptyState } from '@/components/empty-state'
 import { PageDescription } from '@/components/page-description'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
@@ -222,7 +223,9 @@ export function Tasks() {
 
       <Main>
         <PageDescription
+          id='tasks-page'
           summary='Task History shows all automated and manual actions: comments, replies, and reactions posted by the system. Track their status and see results.'
+          helpAnchor='tasks'
           className='mb-4'
         />
 
@@ -306,17 +309,15 @@ export function Tasks() {
 
         {/* Empty */}
         {!loading && tasks.length === 0 && (
-          <div className='flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center'>
-            <div className='mb-4 flex size-14 items-center justify-center rounded-full bg-muted'>
-              <BotMessageSquare className='size-7 text-muted-foreground' />
-            </div>
-            <h3 className='text-base font-semibold'>No tasks found</h3>
-            <p className='mt-1 max-w-sm text-sm text-muted-foreground'>
-              {status !== 'all' || dateFrom
+          <EmptyState
+            icon={BotMessageSquare}
+            title='No tasks found'
+            description={
+              status !== 'all' || dateFrom
                 ? 'No tasks match your current filters. Try changing the status or date range.'
-                : 'Tasks appear here when you post comments, replies, or reactions — either manually or via auto actions.'}
-            </p>
-          </div>
+                : 'Tasks appear here when you post comments, replies, or reactions — either manually or via auto actions.'
+            }
+          />
         )}
 
         {/* Table */}

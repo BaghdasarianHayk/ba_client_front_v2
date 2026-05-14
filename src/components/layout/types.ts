@@ -16,6 +16,8 @@ type BaseNavItem = {
   title: string
   badge?: string
   icon?: React.ElementType
+  /** Short description shown in sidebar tooltip when collapsed */
+  description?: string
 }
 
 type NavLink = BaseNavItem & {

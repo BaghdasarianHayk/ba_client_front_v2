@@ -104,21 +104,31 @@ export function KeywordsPage() {
   const [suggestionsOpen, setSuggestionsOpen] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
 
-  // Load cached suggestions when project changes
+  // Load cached suggestions when project changes, auto-fetch if not cached
   useEffect(() => {
-    if (!suggestionsKey) return
+    if (!suggestionsKey || !projectId) return
     try {
       const cached = localStorage.getItem(suggestionsKey)
       if (cached) {
         setSuggestions(JSON.parse(cached))
         setSuggestionsOpen(true)
       } else {
+        // Auto-fetch suggestions on first visit
         setSuggestions(null)
+        setRefreshing(true)
+        KeywordService.getSuggestions(projectId)
+          .then((data) => {
+            setSuggestions(data)
+            localStorage.setItem(suggestionsKey, JSON.stringify(data))
+            setSuggestionsOpen(true)
+          })
+          .catch(() => { /* non-critical */ })
+          .finally(() => setRefreshing(false))
       }
     } catch {
       setSuggestions(null)
     }
-  }, [suggestionsKey])
+  }, [suggestionsKey, projectId])
 
   // Delete
   const [deleteTarget, setDeleteTarget] = useState<Keyword | null>(null)

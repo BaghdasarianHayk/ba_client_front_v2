@@ -1,22 +1,12 @@
-import axios, { type AxiosInstance } from 'axios'
+import { type AxiosInstance } from 'axios'
 import { API_CONFIG } from '@/config/api-config'
-import { TokenManager } from './token-manager'
+import { createApiClient } from './create-api-client'
 
 // ─── Poster API client (separate microservice) ──────────────────────────────
 
-const posterClient: AxiosInstance = axios.create({
+const posterClient: AxiosInstance = createApiClient({
   baseURL: API_CONFIG.POSTER_BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
-})
-
-posterClient.interceptors.request.use((config) => {
-  const token = TokenManager.getAccessToken()
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  if (!(config.data instanceof FormData)) {
-    config.headers['Content-Type'] = 'application/json'
-  }
-  config.headers['Accept'] = 'application/json'
-  return config
 })
 
 async function post<T>(url: string, data?: unknown): Promise<T> {

@@ -1,21 +1,16 @@
-import axios from 'axios'
 import { API_CONFIG } from '@/config/api-config'
-import { TokenManager } from '@/services/api/token-manager'
+import { createApiClient } from '@/services/api/create-api-client'
 import type { DocType, FileListResponse, UploadResponse, TaskStatus } from './types'
 
-// Knowledge base uses a separate microservice
-function authHeaders() {
-  const token = TokenManager.getAccessToken()
-  return token ? { Authorization: `Bearer ${token}` } : {}
-}
-
-const baseURL = API_CONFIG.KNOWLEDGE_BASE_URL
+// Knowledge base uses a separate microservice — with token refresh
+const kbClient = createApiClient({
+  baseURL: API_CONFIG.KNOWLEDGE_BASE_URL,
+  timeout: API_CONFIG.TIMEOUT,
+})
 
 export const knowledgeBaseAPI = {
   async getFiles(projectId: string): Promise<FileListResponse> {
-    const res = await axios.get<FileListResponse>(`${baseURL}/files/${projectId}`, {
-      headers: { ...authHeaders(), Accept: 'application/json' },
-    })
+    const res = await kbClient.get<FileListResponse>(`/files/${projectId}`)
     return res.data
   },
 
@@ -32,22 +27,16 @@ export const knowledgeBaseAPI = {
     if (docType === 'competitor' && competitorName) {
       formData.append('competitor_name', competitorName)
     }
-    const res = await axios.post<UploadResponse>(`${baseURL}/upload`, formData, {
-      headers: { ...authHeaders() },
-    })
+    const res = await kbClient.post<UploadResponse>('/upload', formData)
     return res.data
   },
 
   async getTaskStatus(taskId: string): Promise<TaskStatus> {
-    const res = await axios.get<TaskStatus>(`${baseURL}/status/${taskId}`, {
-      headers: { ...authHeaders(), Accept: 'application/json' },
-    })
+    const res = await kbClient.get<TaskStatus>(`/status/${taskId}`)
     return res.data
   },
 
   async deleteFile(projectId: string, fileUuid: string): Promise<void> {
-    await axios.delete(`${baseURL}/files/${projectId}/${fileUuid}`, {
-      headers: { ...authHeaders(), Accept: 'application/json' },
-    })
+    await kbClient.delete(`/files/${projectId}/${fileUuid}`)
   },
 }

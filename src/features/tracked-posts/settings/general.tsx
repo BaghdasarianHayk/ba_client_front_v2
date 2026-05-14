@@ -114,13 +114,13 @@ export function TrackedPostGeneral() {
           <Input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder='https://t.me/channel/123'
+            placeholder='https://t.me/channel/123 or post link'
             disabled={!isNew}
             autoFocus={isNew}
           />
           {isNew && (
             <p className='text-[11px] text-muted-foreground'>
-              Paste a Telegram post URL to start tracking comments.
+              Paste a link to any Telegram post. The system will monitor its comments and let you set up auto-reply rules.
             </p>
           )}
           {!isNew && (

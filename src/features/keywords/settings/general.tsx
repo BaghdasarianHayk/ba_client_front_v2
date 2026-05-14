@@ -127,13 +127,21 @@ export function KeywordGeneral() {
       <div className='space-y-5'>
         {/* Keyword */}
         <div className='space-y-1.5'>
-          <Label className='text-xs'>Keyword</Label>
+          <div className='flex items-center gap-1.5'>
+            <Label className='text-xs'>Keyword</Label>
+            <InfoTooltip content='The search term to monitor. Can be a single word or a phrase. The system uses fuzzy matching — it will find posts that discuss this topic, not just exact matches.' />
+          </div>
           <Input
             value={kw}
             onChange={(e) => setKw(e.target.value)}
             placeholder='e.g. crypto wallet'
             autoFocus={isNew}
           />
+          {isNew && (
+            <p className='text-[11px] text-muted-foreground'>
+              Tip: Use specific phrases for better results. "crypto wallet app" is better than just "crypto".
+            </p>
+          )}
         </div>
 
         {/* Excluded */}
@@ -175,7 +183,10 @@ export function KeywordGeneral() {
 
         {/* Platforms */}
         <div className='space-y-1.5'>
-          <Label className='text-xs'>Platforms</Label>
+          <div className='flex items-center gap-1.5'>
+            <Label className='text-xs'>Platforms</Label>
+            <InfoTooltip content='Select which social platforms to search for this keyword. The system will scan selected platforms and show matching posts in your Mentions feed.' />
+          </div>
           <div className='grid grid-cols-4 gap-1.5'>
             {ALL_PLATFORMS.map((p) => (
               <label

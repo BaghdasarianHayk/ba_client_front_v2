@@ -84,7 +84,10 @@ export function TrackedPostAutoReply() {
         <div className={enabled ? '' : 'pointer-events-none opacity-40'}>
           <div className='space-y-2'>
             <div className='flex items-center justify-between'>
-              <Label className='text-xs'>Min. relevance</Label>
+              <div className='flex items-center gap-1.5'>
+                <Label className='text-xs'>Min. relevance</Label>
+                <InfoTooltip content='Only auto-reply to comments with relevance above this threshold. Higher = fewer but more targeted replies.' />
+              </div>
               <span className='text-sm font-medium'>{threshold}%</span>
             </div>
             <Slider
@@ -133,8 +136,8 @@ export function TrackedPostAutoReply() {
             <Textarea
               value={rules}
               onChange={(e) => setRules(e.target.value)}
-              placeholder='Instructions for AI when writing replies…'
-              className='min-h-[72px] resize-y text-sm'
+              placeholder={'Example:\n• Answer questions about pricing\n• Be helpful and concise\n• Link to docs when relevant'}
+              className='min-h-[96px] resize-y text-sm'
             />
           </div>
         </div>

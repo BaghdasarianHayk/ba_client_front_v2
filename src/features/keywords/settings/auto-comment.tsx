@@ -83,10 +83,16 @@ export function KeywordAutoComment() {
           {/* Min relevance */}
           <div className='space-y-2'>
             <div className='flex items-center justify-between'>
-              <Label className='text-xs'>Min. relevance</Label>
+              <div className='flex items-center gap-1.5'>
+                <Label className='text-xs'>Min. relevance</Label>
+                <InfoTooltip content='Only auto-reply to mentions with relevance above this threshold. Set higher (80-95%) to reply only to highly relevant posts, lower (50-70%) for broader engagement.' />
+              </div>
               <span className='text-sm font-medium'>{threshold}%</span>
             </div>
             <Slider value={[threshold]} onValueChange={([v]) => setThreshold(v)} min={0} max={100} step={1} />
+            <p className='text-[11px] text-muted-foreground'>
+              Recommended: 80%+ for brand keywords, 60%+ for general topics.
+            </p>
           </div>
 
           {/* Min score */}
@@ -127,15 +133,18 @@ export function KeywordAutoComment() {
 
           {/* Rules */}
           <div className='mt-4 space-y-1.5'>
-            <Label className='text-xs'>
-              Reply rules{' '}
-              <span className='font-normal text-muted-foreground'>(optional)</span>
-            </Label>
+            <div className='flex items-center gap-1.5'>
+              <Label className='text-xs'>
+                Reply rules{' '}
+                <span className='font-normal text-muted-foreground'>(optional)</span>
+              </Label>
+              <InfoTooltip content='Custom instructions for the AI when writing replies. The AI also uses your Knowledge Base documents for context.' />
+            </div>
             <Textarea
               value={rules}
               onChange={(e) => setRules(e.target.value)}
-              placeholder='Instructions for AI when writing replies…'
-              className='min-h-[72px] resize-y text-sm'
+              placeholder={'Example:\n• Be friendly and casual\n• Mention our free trial when relevant\n• Never badmouth competitors\n• Keep replies under 3 sentences'}
+              className='min-h-[96px] resize-y text-sm'
             />
           </div>
         </div>

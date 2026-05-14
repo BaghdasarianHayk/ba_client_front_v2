@@ -106,6 +106,11 @@ export function FollowingGeneral() {
             disabled={!isNew}
             autoFocus={isNew}
           />
+          {isNew && (
+            <p className='text-[11px] text-muted-foreground'>
+              Enter a public Telegram channel username. All new posts will be analyzed and shown in your Mentions feed if relevant.
+            </p>
+          )}
           {!isNew && (
             <p className='text-[11px] text-muted-foreground'>
               Channel URL cannot be changed after creation.

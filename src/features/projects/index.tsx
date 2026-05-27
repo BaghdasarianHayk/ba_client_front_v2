@@ -154,9 +154,16 @@ function ProjectCard({
       className='group w-full cursor-pointer rounded-xl border bg-card p-5 text-start shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg'
     >
       <div className='mb-3 flex items-start justify-between'>
-        <h3 className='text-lg font-semibold transition-colors group-hover:text-primary'>
-          {project.brand_name}
-        </h3>
+        <div className='flex items-center gap-2'>
+          <h3 className='text-lg font-semibold transition-colors group-hover:text-primary'>
+            {project.brand_name}
+          </h3>
+          {project.brand_tags?.length > 0 && (
+            <Badge variant='secondary' className='shrink-0 text-[10px]'>
+              {project.brand_tags[0]}
+            </Badge>
+          )}
+        </div>
         <ArrowRight className='size-4 -translate-x-2 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0 group-hover:text-primary group-hover:opacity-100' />
       </div>
 

@@ -13,6 +13,7 @@ import {
   AreaChart,
   CartesianGrid,
   Legend,
+  Line,
   ResponsiveContainer,
   Tooltip as RTooltip,
   XAxis,
@@ -35,7 +36,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { Slider } from '@/components/ui/slider'
 import {
   Table,
   TableBody,
@@ -57,6 +57,7 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { PlatformIcon, type PlatformId } from '@/components/platform-icon'
 import { DateRangePresets } from '@/components/shared/date-range-presets'
+import { RangeSliderWithInput } from '@/components/shared/range-slider-with-input'
 import { aggregateData, type GroupBy } from './data-aggregation'
 import {
   mentionsByDay,
@@ -153,6 +154,7 @@ export function ReportsPage() {
   const [selectedKwTypes, setSelectedKwTypes] = useState<Set<string>>(new Set())
   const [repliedFilter, setRepliedFilter] = useState<Set<string>>(new Set(['not', 'auto', 'manual']))
   const [hasComments, setHasComments] = useState<'all' | 'yes' | 'no'>('all')
+  const [showTotal, setShowTotal] = useState(true)
 
   // Count active filters for badge
   const activeFilterCount = [
@@ -208,13 +210,43 @@ export function ReportsPage() {
     () => aggregateData(sourceDataMentions, groupBy, dateFrom, dateTo),
     [sourceDataMentions, groupBy, dateFrom, dateTo]
   )
+
+  // Add total field to sentiment chart data
+  const mentionsByDayWithTotal = useMemo(
+    () => aggregatedMentionsByDay.map((d: any) => ({
+      ...d,
+      total: (d.positive || 0) + (d.neutral || 0) + (d.negative || 0) + (d.question || 0),
+    })),
+    [aggregatedMentionsByDay]
+  )
+
   const aggregatedMentionsByPlatform = useMemo(
     () => aggregateData(sourceDataPlatforms, groupBy, dateFrom, dateTo),
     [sourceDataPlatforms, groupBy, dateFrom, dateTo]
   )
+
+  // Add total field to platform chart data
+  const platformKeys = Object.keys(CHART_PLATFORM_COLORS)
+  const mentionsByPlatformWithTotal = useMemo(
+    () => aggregatedMentionsByPlatform.map((d: any) => ({
+      ...d,
+      total: platformKeys.reduce((sum, k) => sum + ((d[k] as number) || 0), 0),
+    })),
+    [aggregatedMentionsByPlatform]
+  )
+
   const aggregatedReachScore = useMemo(
     () => aggregateData(sourceDataReach, groupBy, dateFrom, dateTo),
     [sourceDataReach, groupBy, dateFrom, dateTo]
+  )
+
+  // Add total field to reach score chart data
+  const reachScoreWithTotal = useMemo(
+    () => aggregatedReachScore.map((d: any) => ({
+      ...d,
+      total: platformKeys.reduce((sum, k) => sum + ((d[k] as number) || 0), 0),
+    })),
+    [aggregatedReachScore]
   )
 
   // Activity (comments: auto + manual)
@@ -394,18 +426,22 @@ export function ReportsPage() {
 
               {/* Relevance */}
               <FilterSection label={`Relevance: ${relevanceRange[0]}–${relevanceRange[1]}`}>
-                <Slider min={0} max={100} step={1} value={relevanceRange} onValueChange={(v) => setRelevanceRange(v as [number, number])} />
+                <RangeSliderWithInput min={0} max={100} step={1} value={relevanceRange} onValueChange={setRelevanceRange} />
               </FilterSection>
 
               {/* Reach Score */}
               <FilterSection label={`Reach Score: ${scoreRange[0].toLocaleString()}–${scoreRange[1].toLocaleString()}`}>
-                <Slider min={0} max={50000} step={100} value={scoreRange} onValueChange={(v) => setScoreRange(v as [number, number])} />
+                <RangeSliderWithInput min={0} max={50000} step={100} value={scoreRange} onValueChange={setScoreRange} />
               </FilterSection>
             </div>
           </PopoverContent>
         </Popover>
 
         <div className='ms-auto flex items-center gap-2'>
+          <label className='inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border bg-muted/60 px-2.5 py-1 text-xs font-medium'>
+            <Checkbox checked={showTotal} onCheckedChange={(checked) => setShowTotal(checked === true)} className='size-3.5' />
+            <span>Total</span>
+          </label>
           <Button variant='outline' size='sm' className='h-8 gap-1.5'>
             <Download className='size-3.5' />
             <span className='hidden sm:inline'>Export</span>
@@ -469,7 +505,7 @@ export function ReportsPage() {
             </CardHeader>
             <CardContent className='pt-0'>
               <ResponsiveContainer width='100%' height={220}>
-                <AreaChart data={aggregatedMentionsByDay}>
+                <AreaChart data={mentionsByDayWithTotal}>
                   <CartesianGrid strokeDasharray='3 3' className='stroke-border' />
                   <XAxis dataKey='date' tick={{ fontSize: 10 }} interval='preserveStartEnd' className='fill-muted-foreground' />
                   <YAxis tick={{ fontSize: 10 }} className='fill-muted-foreground' allowDecimals={false} width={30} />
@@ -478,8 +514,8 @@ export function ReportsPage() {
                     wrapperStyle={{ fontSize: 11, cursor: 'pointer' }} 
                     onClick={(e) => handleSentimentLegendClick(e.dataKey as string)}
                     formatter={(value: string, entry: any) => {
-                      const total = aggregatedMentionsByDay.reduce((sum, d) => sum + (d[entry.dataKey as keyof typeof d] as number || 0), 0)
-                      const grandTotal = aggregatedMentionsByDay.reduce((sum, d) => sum + (d.positive as number || 0) + (d.neutral as number || 0) + (d.negative as number || 0) + (d.question as number || 0), 0)
+                      const total = mentionsByDayWithTotal.reduce((sum, d) => sum + (d[entry.dataKey as keyof typeof d] as number || 0), 0)
+                      const grandTotal = mentionsByDayWithTotal.reduce((sum, d) => sum + (d.positive as number || 0) + (d.neutral as number || 0) + (d.negative as number || 0) + (d.question as number || 0), 0)
                       const pct = Math.round((total / grandTotal) * 100)
                       const isActive = activeSentiments.has(entry.dataKey)
                       const hasActive = activeSentiments.size > 0
@@ -491,6 +527,7 @@ export function ReportsPage() {
                   <Area type='monotone' dataKey='neutral' name='Neutral' fill='#f59e0b' stroke='#f59e0b' fillOpacity={activeSentiments.size === 0 || activeSentiments.has('neutral') ? 0.3 : 0.05} strokeOpacity={activeSentiments.size === 0 || activeSentiments.has('neutral') ? 1 : 0.3} strokeWidth={2} />
                   <Area type='monotone' dataKey='negative' name='Negative' fill='#ef4444' stroke='#ef4444' fillOpacity={activeSentiments.size === 0 || activeSentiments.has('negative') ? 0.3 : 0.05} strokeOpacity={activeSentiments.size === 0 || activeSentiments.has('negative') ? 1 : 0.3} strokeWidth={2} />
                   <Area type='monotone' dataKey='question' name='Question' fill='#a855f7' stroke='#a855f7' fillOpacity={activeSentiments.size === 0 || activeSentiments.has('question') ? 0.3 : 0.05} strokeOpacity={activeSentiments.size === 0 || activeSentiments.has('question') ? 1 : 0.3} strokeWidth={2} />
+                  {showTotal && <Line type='monotone' dataKey='total' name='Total' stroke='#334155' strokeWidth={2.5} strokeDasharray='5 3' dot={false} />}
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
@@ -509,7 +546,7 @@ export function ReportsPage() {
             </CardHeader>
             <CardContent className='pt-0'>
               <ResponsiveContainer width='100%' height={220}>
-                <AreaChart data={aggregatedMentionsByPlatform}>
+                <AreaChart data={mentionsByPlatformWithTotal}>
                   <CartesianGrid strokeDasharray='3 3' className='stroke-border' />
                   <XAxis dataKey='date' tick={{ fontSize: 10 }} interval='preserveStartEnd' className='fill-muted-foreground' />
                   <YAxis tick={{ fontSize: 10 }} className='fill-muted-foreground' allowDecimals={false} width={30} />
@@ -518,8 +555,8 @@ export function ReportsPage() {
                     wrapperStyle={{ fontSize: 11, cursor: 'pointer' }} 
                     onClick={(e) => handlePlatformLegendClick(e.dataKey as string)}
                     formatter={(value: string, entry: any) => {
-                      const total = aggregatedMentionsByPlatform.reduce((sum, d) => sum + (d[entry.dataKey as keyof typeof d] as number || 0), 0)
-                      const grandTotal = aggregatedMentionsByPlatform.reduce((sum, d) => sum + (d.telegram as number || 0) + (d.reddit as number || 0) + (d.youtube as number || 0) + (d.x as number || 0) + (d.instagram as number || 0) + (d.facebook as number || 0) + (d.tiktok as number || 0) + (d.web as number || 0), 0)
+                      const total = mentionsByPlatformWithTotal.reduce((sum, d) => sum + (d[entry.dataKey as keyof typeof d] as number || 0), 0)
+                      const grandTotal = mentionsByPlatformWithTotal.reduce((sum, d) => sum + (d.telegram as number || 0) + (d.reddit as number || 0) + (d.youtube as number || 0) + (d.x as number || 0) + (d.instagram as number || 0) + (d.facebook as number || 0) + (d.tiktok as number || 0) + (d.web as number || 0), 0)
                       const pct = Math.round((total / grandTotal) * 100)
                       const isActive = activePlatforms.has(entry.dataKey)
                       const hasActive = activePlatforms.size > 0
@@ -530,6 +567,7 @@ export function ReportsPage() {
                   {Object.entries(CHART_PLATFORM_COLORS).map(([key, color]) => (
                     <Area key={key} type='monotone' dataKey={key} name={key.charAt(0).toUpperCase() + key.slice(1)} fill={color} stroke={color} fillOpacity={activePlatforms.size === 0 || activePlatforms.has(key) ? 0.3 : 0.05} strokeOpacity={activePlatforms.size === 0 || activePlatforms.has(key) ? 1 : 0.3} strokeWidth={2} />
                   ))}
+                  {showTotal && <Line type='monotone' dataKey='total' name='Total' stroke='#334155' strokeWidth={2.5} strokeDasharray='5 3' dot={false} />}
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
@@ -550,7 +588,7 @@ export function ReportsPage() {
           </CardHeader>
           <CardContent className='pt-0'>
             <ResponsiveContainer width='100%' height={220}>
-              <AreaChart data={aggregatedReachScore}>
+              <AreaChart data={reachScoreWithTotal}>
                 <CartesianGrid strokeDasharray='3 3' className='stroke-border' />
                 <XAxis dataKey='date' tick={{ fontSize: 10 }} interval='preserveStartEnd' className='fill-muted-foreground' />
                 <YAxis tick={{ fontSize: 10 }} className='fill-muted-foreground' allowDecimals={false} width={40} />
@@ -559,8 +597,8 @@ export function ReportsPage() {
                   wrapperStyle={{ fontSize: 11, cursor: 'pointer' }} 
                   onClick={(e) => handleReachPlatformLegendClick(e.dataKey as string)}
                   formatter={(value: string, entry: any) => {
-                    const total = aggregatedReachScore.reduce((sum, d) => sum + (d[entry.dataKey as keyof typeof d] as number || 0), 0)
-                    const grandTotal = aggregatedReachScore.reduce((sum, d) => sum + (d.telegram as number || 0) + (d.reddit as number || 0) + (d.youtube as number || 0) + (d.x as number || 0) + (d.instagram as number || 0) + (d.facebook as number || 0) + (d.tiktok as number || 0) + (d.web as number || 0), 0)
+                    const total = reachScoreWithTotal.reduce((sum, d) => sum + (d[entry.dataKey as keyof typeof d] as number || 0), 0)
+                    const grandTotal = reachScoreWithTotal.reduce((sum, d) => sum + (d.telegram as number || 0) + (d.reddit as number || 0) + (d.youtube as number || 0) + (d.x as number || 0) + (d.instagram as number || 0) + (d.facebook as number || 0) + (d.tiktok as number || 0) + (d.web as number || 0), 0)
                     const pct = Math.round((total / grandTotal) * 100)
                     const isActive = activeReachPlatforms.has(entry.dataKey)
                     const hasActive = activeReachPlatforms.size > 0
@@ -571,6 +609,7 @@ export function ReportsPage() {
                 {Object.entries(CHART_PLATFORM_COLORS).map(([key, color]) => (
                   <Area key={key} type='monotone' dataKey={key} name={key.charAt(0).toUpperCase() + key.slice(1)} fill={color} stroke={color} fillOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has(key) ? 0.3 : 0.05} strokeOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has(key) ? 1 : 0.3} strokeWidth={2} />
                 ))}
+                {showTotal && <Line type='monotone' dataKey='total' name='Total' stroke='#334155' strokeWidth={2.5} strokeDasharray='5 3' dot={false} />}
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>

@@ -69,7 +69,7 @@ export function FollowingsPage() {
     try {
       setFollowings(await ChannelService.getChannels(projectId))
     } catch (err: any) {
-      toast.error(err.detail || err.message || 'Failed to load followings')
+      toast.error(err.detail || err.message || 'Failed to load channels')
     } finally {
       setLoadingList(false)
     }
@@ -140,7 +140,7 @@ export function FollowingsPage() {
   return (
     <>
       <Header>
-        <h1 className='text-sm font-semibold'>Followings</h1>
+        <h1 className='text-sm font-semibold'>Tracked Channels</h1>
         <div className='ms-auto flex items-center gap-2'>
           {canEdit && (
             <Button
@@ -162,7 +162,7 @@ export function FollowingsPage() {
       <Main fixed>
         <PageDescription
           id='followings-page'
-          summary='Followings are Telegram channels you monitor. New posts from followed channels appear in your Mentions feed automatically.'
+          summary='Tracked Channels are Telegram channels you monitor. New posts from tracked channels appear in your Mentions feed automatically.'
           details='Follow channels relevant to your brand or industry. You can configure auto-reply and auto-react rules for each channel separately.'
           helpAnchor='followings'
           className='mb-3'
@@ -182,7 +182,7 @@ export function FollowingsPage() {
                 <input
                   type='text'
                   className='w-full flex-1 bg-inherit text-sm focus-visible:outline-hidden'
-                  placeholder='Search followings...'
+                  placeholder='Search channels...'
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -233,7 +233,7 @@ export function FollowingsPage() {
               {!loadingList && filtered.length === 0 && (
                 <p className='py-8 text-center text-sm text-muted-foreground'>
                   {followings.length === 0
-                    ? 'No followings yet'
+                    ? 'No tracked channels yet'
                     : 'No results'}
                 </p>
               )}
@@ -350,9 +350,9 @@ export function FollowingsPage() {
                   <Radio className='size-8' />
                 </div>
                 <div className='space-y-2 text-center'>
-                  <h1 className='text-xl font-semibold'>Your followings</h1>
+                  <h1 className='text-xl font-semibold'>Your tracked channels</h1>
                   <p className='text-sm text-muted-foreground'>
-                    Select a following from the list to view its posts and configure monitoring settings.
+                    Select a channel from the list to view its posts and configure monitoring settings.
                   </p>
                   <p className='text-xs text-muted-foreground/70'>
                     Tip: Click the gear icon to set up auto-reply and auto-react rules for each channel.

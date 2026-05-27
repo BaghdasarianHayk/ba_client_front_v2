@@ -1,25 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router'
-import { Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { PostService } from '@/services/api/post-service'
-import { useSettingsSave } from '@/hooks/use-settings-save'
+import { useRegisterSave } from '@/hooks/use-settings-save'
 
 export function TrackedPostGeneral() {
   const navigate = useNavigate()
@@ -32,8 +19,6 @@ export function TrackedPostGeneral() {
   const [url, setUrl] = useState(initialUrl ?? '')
   const [active, setActive] = useState(true)
   const [loaded, setLoaded] = useState(isNew)
-  const [deleteOpen, setDeleteOpen] = useState(false)
-  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (isNew || !projectId || !postId) return
@@ -83,38 +68,16 @@ export function TrackedPostGeneral() {
     }
   }
 
-  const { register, unregister } = useSettingsSave()
-  useEffect(() => {
-    register({
-      handler: handleSave,
-      disabled: !url.trim(),
-      label: isNew ? 'Start Tracking' : 'Save Changes',
-    })
-    return unregister
+  useRegisterSave({
+    id: 'tracked-post-general',
+    handler: handleSave,
+    disabled: !url.trim(),
+    label: isNew ? 'Start Tracking' : 'Save Changes',
   })
-
-  const handleDelete = async () => {
-    if (!projectId || !postId) return
-    setDeleting(true)
-    try {
-      await PostService.deletePost(projectId, postId)
-      toast.success('Post tracking removed')
-      navigate({ to: '/tracked-posts', replace: true })
-    } catch (err: any) {
-      toast.error(err.detail || err.message || 'Failed to delete')
-    } finally {
-      setDeleting(false)
-      setDeleteOpen(false)
-    }
-  }
 
   if (!loaded) return null
 
   return (
-    <ContentSection
-      title='General'
-      desc='Post URL and monitoring status.'
-    >
       <div className='space-y-5'>
         <div className='space-y-1.5'>
           <Label className='text-xs'>Post URL</Label>
@@ -146,43 +109,6 @@ export function TrackedPostGeneral() {
           </div>
           <Switch checked={active} onCheckedChange={setActive} />
         </div>
-
-        <div className='flex items-center gap-2'>
-          {!isNew && (
-            <Button
-              variant='destructive'
-              size='sm'
-              className='gap-1.5'
-              onClick={() => setDeleteOpen(true)}
-            >
-              <Trash2 className='size-3.5' />
-              Delete
-            </Button>
-          )}
-        </div>
-
-        <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Stop tracking this post?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will stop all monitoring and automated actions for this
-                post. This cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                disabled={deleting}
-                className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
-              >
-                {deleting ? 'Deleting…' : 'Delete'}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
-    </ContentSection>
   )
 }

@@ -1,51 +1,98 @@
+import { useEffect, useRef } from 'react'
 import { create } from 'zustand'
 
 /**
- * Coordinates a Save button in the page Header with form state
- * in child components. Child components register their save handler;
- * the Header button triggers it.
+ * Coordinates Save buttons in page Headers with form state in child components.
+ * Multiple children can register handlers; trigger() calls all of them.
+ * Each registration is keyed by a unique ID to prevent conflicts.
  */
+
+interface Registration {
+  handler: () => Promise<void>
+  disabled?: boolean
+  label?: string
+}
 
 interface SettingsSaveState {
   saving: boolean
-  disabled: boolean
-  label: string
-  handler: (() => Promise<void>) | null
+  registrations: Map<string, Registration>
 
-  /** Called by child components to register their save logic */
-  register: (opts: { handler: () => Promise<void>; disabled?: boolean; label?: string }) => void
-  /** Called by child components on unmount */
-  unregister: () => void
-  /** Called by the Header Save button */
+  register: (id: string, opts: Registration) => void
+  unregister: (id: string) => void
   trigger: () => Promise<void>
-  /** Update disabled state */
-  setDisabled: (disabled: boolean) => void
 }
 
 export const useSettingsSave = create<SettingsSaveState>()((set, get) => ({
   saving: false,
-  disabled: false,
-  label: 'Save Changes',
-  handler: null,
+  registrations: new Map(),
 
-  register: ({ handler, disabled = false, label = 'Save Changes' }) => {
-    set({ handler, disabled, label })
+  register: (id, opts) => {
+    set((state) => {
+      const next = new Map(state.registrations)
+      next.set(id, opts)
+      return { registrations: next }
+    })
   },
 
-  unregister: () => {
-    set({ handler: null, saving: false, disabled: false, label: 'Save Changes' })
+  unregister: (id) => {
+    set((state) => {
+      const next = new Map(state.registrations)
+      next.delete(id)
+      return { registrations: next }
+    })
   },
 
   trigger: async () => {
-    const { handler } = get()
-    if (!handler) return
+    const { registrations } = get()
+    if (registrations.size === 0) return
     set({ saving: true })
     try {
-      await handler()
+      // Call all registered handlers (in practice only one is active at a time
+      // because the active tab's handler is the last registered)
+      const handlers = Array.from(registrations.values()).map((r) => r.handler())
+      await Promise.all(handlers)
     } finally {
       set({ saving: false })
     }
   },
-
-  setDisabled: (disabled) => set({ disabled }),
 }))
+
+// ─── Convenience hook for child components ───────────────────────────────────
+
+/**
+ * Registers a save handler with the settings save store.
+ * Automatically handles registration/cleanup lifecycle.
+ */
+export function useRegisterSave(opts: {
+  id: string
+  handler: () => Promise<void>
+  disabled?: boolean
+  label?: string
+}) {
+  const { id, handler, disabled, label } = opts
+  const handlerRef = useRef(handler)
+  handlerRef.current = handler
+
+  const { register, unregister } = useSettingsSave()
+
+  useEffect(() => {
+    register(id, {
+      handler: () => handlerRef.current(),
+      disabled,
+      label,
+    })
+    return () => unregister(id)
+  }, [id, disabled, label, register, unregister])
+}
+
+// ─── Derived selectors ───────────────────────────────────────────────────────
+
+export function useSettingsSaveButton() {
+  const { saving, registrations, trigger } = useSettingsSave()
+  const hasHandler = registrations.size > 0
+  const disabled = Array.from(registrations.values()).some((r) => r.disabled)
+  // Use the label from the last registered handler (General tab is typically first)
+  const entries = Array.from(registrations.values())
+  const label = entries.length > 0 ? (entries[0].label || 'Save Changes') : 'Save Changes'
+  return { saving, hasHandler, disabled, label, trigger }
+}

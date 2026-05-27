@@ -1,25 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router'
-import { Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { ChannelService } from '@/services/api/channel-service'
-import { useSettingsSave } from '@/hooks/use-settings-save'
+import { useRegisterSave } from '@/hooks/use-settings-save'
 
 export function FollowingGeneral() {
   const navigate = useNavigate()
@@ -32,8 +19,6 @@ export function FollowingGeneral() {
   const [username, setUsername] = useState(initialUsername ?? '')
   const [active, setActive] = useState(true)
   const [loaded, setLoaded] = useState(isNew)
-  const [deleteOpen, setDeleteOpen] = useState(false)
-  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (isNew || !projectId || !channelId) return
@@ -61,48 +46,29 @@ export function FollowingGeneral() {
           comment_count_min: null,
           comment_count_max: null,
         })
-        toast.success('Following created')
+        toast.success('Channel created')
         navigate({ to: `/followings/${created.id}/settings`, replace: true })
       } else {
         await ChannelService.updateChannel(projectId, channelId!, {
           status: active ? 'active' : 'paused',
         })
-        toast.success('Following updated')
+        toast.success('Channel updated')
       }
     } catch (err: any) {
       toast.error(err.detail || err.message || 'Failed to save')
     }
   }
 
-  const { register, unregister } = useSettingsSave()
-  useEffect(() => {
-    register({
-      handler: handleSave,
-      disabled: !username.trim(),
-      label: isNew ? 'Create Following' : 'Save Changes',
-    })
-    return unregister
+  useRegisterSave({
+    id: 'following-general',
+    handler: handleSave,
+    disabled: !username.trim(),
+    label: isNew ? 'Create Channel' : 'Save Changes',
   })
-
-  const handleDelete = async () => {
-    if (!projectId || !channelId) return
-    setDeleting(true)
-    try {
-      await ChannelService.deleteChannel(projectId, channelId)
-      toast.success('Following deleted')
-      navigate({ to: '/followings', replace: true })
-    } catch (err: any) {
-      toast.error(err.detail || err.message || 'Failed to delete')
-    } finally {
-      setDeleting(false)
-      setDeleteOpen(false)
-    }
-  }
 
   if (!loaded) return null
 
   return (
-    <ContentSection title='General' desc='Channel URL and monitoring status.'>
       <div className='space-y-5'>
         <div className='space-y-1.5'>
           <Label className='text-xs'>Channel Username</Label>
@@ -134,42 +100,6 @@ export function FollowingGeneral() {
           </div>
           <Switch checked={active} onCheckedChange={setActive} />
         </div>
-
-        <div className='flex items-center gap-2'>
-          {!isNew && (
-            <Button
-              variant='destructive'
-              size='sm'
-              className='gap-1.5'
-              onClick={() => setDeleteOpen(true)}
-            >
-              <Trash2 className='size-3.5' />
-              Delete
-            </Button>
-          )}
-        </div>
-
-        <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete following?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will stop all monitoring and remove this channel. This cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                disabled={deleting}
-                className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
-              >
-                {deleting ? 'Deleting…' : 'Delete'}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
-    </ContentSection>
   )
 }

@@ -465,9 +465,10 @@ export function Mentions() {
 
         {/* Right cluster */}
         <div className='ms-auto flex items-center gap-1.5 sm:gap-2'>
+          {/* Filter toggle — hidden on wide screens where filter is always visible */}
           <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
             <SheetTrigger asChild>
-              <Button variant='outline' size='sm' className='h-8 gap-1.5'>
+              <Button variant='outline' size='sm' className='h-8 gap-1.5 2xl:hidden'>
                 <Filter className='size-3.5' />
                 <span className='hidden sm:inline'>Filter</span>
                 {extraFilterCount > 0 && (
@@ -493,6 +494,9 @@ export function Mentions() {
       </Header>
 
       <Main>
+        <div className='flex gap-6'>
+          {/* Content column */}
+          <div className='min-w-0 flex-1'>
         {!projectId && !isLoading && (
           <div className='flex flex-col items-center justify-center py-16 text-center'>
             <div className='mb-4 flex size-14 items-center justify-center rounded-full bg-muted'>
@@ -583,6 +587,20 @@ export function Mentions() {
         {!isLoading && !hasMore && posts.length > 0 && (
           <p className='py-6 text-center text-sm text-muted-foreground'>No more mentions to load</p>
         )}
+          </div>
+
+          {/* Filter sidebar — visible only on wide screens */}
+          <aside className='hidden w-80 shrink-0 2xl:block'>
+            <div className='sticky top-20 flex h-[calc(100svh-6rem)] flex-col rounded-lg border'>
+              <MentionsFilter
+                filters={effectiveFilters}
+                stats={stats}
+                onApply={(f) => setFilters(f)}
+                onClose={() => {}}
+              />
+            </div>
+          </aside>
+        </div>
       </Main>
     </>
   )

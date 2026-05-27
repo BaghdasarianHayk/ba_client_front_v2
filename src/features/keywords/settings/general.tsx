@@ -8,11 +8,10 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { InfoTooltip } from '@/components/info-tooltip'
-import { ContentSection } from '@/features/settings/components/content-section'
 import { PlatformIcon, type PlatformId } from '@/components/platform-icon'
 import { useProjectStore } from '@/stores/project-store'
 import { KeywordService } from '@/services/api/keyword-service'
-import { useSettingsSave } from '@/hooks/use-settings-save'
+import { useRegisterSave } from '@/hooks/use-settings-save'
 
 const ALL_PLATFORMS: { id: PlatformId; label: string }[] = [
   { id: 'reddit', label: 'Reddit' },
@@ -115,23 +114,16 @@ export function KeywordGeneral() {
   }
 
   // Register save handler with the Header button
-  const { register, unregister } = useSettingsSave()
-  useEffect(() => {
-    register({
-      handler: handleSave,
-      disabled: !kw.trim() || platforms.size === 0,
-      label: isNew ? 'Create Keyword' : 'Save Changes',
-    })
-    return unregister
-  }) // intentionally no deps — re-registers on every render to capture latest state
+  useRegisterSave({
+    id: 'keyword-general',
+    handler: handleSave,
+    disabled: !kw.trim() || platforms.size === 0,
+    label: isNew ? 'Create Keyword' : 'Save Changes',
+  })
 
   if (!loaded) return null
 
   return (
-    <ContentSection
-      title='General'
-      desc='Keyword text, excluded terms, platforms, and type.'
-    >
       <div className='space-y-5'>
         {/* Keyword */}
         <div className='space-y-1.5'>
@@ -229,6 +221,5 @@ export function KeywordGeneral() {
           </p>
         </div>
       </div>
-    </ContentSection>
   )
 }

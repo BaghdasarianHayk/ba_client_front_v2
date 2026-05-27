@@ -6,10 +6,9 @@ import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { InfoTooltip } from '@/components/info-tooltip'
-import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { PostService } from '@/services/api/post-service'
-import { useSettingsSave } from '@/hooks/use-settings-save'
+import { useRegisterSave } from '@/hooks/use-settings-save'
 
 export function TrackedPostAutoReply() {
   const { postId } = useParams({ strict: false }) as { postId?: string }
@@ -58,20 +57,14 @@ export function TrackedPostAutoReply() {
     }
   }
 
-  const { register, unregister } = useSettingsSave()
-  useEffect(() => {
-    if (isNew) return
-    register({ handler: handleSave })
-    return unregister
+  useRegisterSave({
+    id: 'tracked-post-auto-reply',
+    handler: handleSave,
   })
 
   if (!loaded) return null
 
   return (
-    <ContentSection
-      title='Auto Reply'
-      desc='Automatically reply to comments on this post.'
-    >
       <div className='space-y-5'>
         <div className='flex items-center justify-between'>
           <div>
@@ -144,6 +137,5 @@ export function TrackedPostAutoReply() {
           </div>
         </div>
       </div>
-    </ContentSection>
   )
 }

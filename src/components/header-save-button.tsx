@@ -1,11 +1,11 @@
 import { Loader2, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useSettingsSave } from '@/hooks/use-settings-save'
+import { useSettingsSaveButton } from '@/hooks/use-settings-save'
 
 export function HeaderSaveButton() {
-  const { saving, disabled, label, handler, trigger } = useSettingsSave()
+  const { saving, hasHandler, disabled, label, trigger } = useSettingsSaveButton()
 
-  if (!handler) return null
+  if (!hasHandler) return null
 
   return (
     <Button

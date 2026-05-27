@@ -15,10 +15,9 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { InfoTooltip } from '@/components/info-tooltip'
-import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { KeywordService } from '@/services/api/keyword-service'
-import { useSettingsSave } from '@/hooks/use-settings-save'
+import { useRegisterSave } from '@/hooks/use-settings-save'
 
 type SentimentId = 'positive' | 'negative' | 'neutral' | 'question'
 type ReactionType = 'POSITIVE' | 'NEGATIVE' | null
@@ -87,20 +86,14 @@ export function KeywordAutoReact() {
     }
   }
 
-  const { register, unregister } = useSettingsSave()
-  useEffect(() => {
-    if (isNew) return
-    register({ handler: handleSave })
-    return unregister
+  useRegisterSave({
+    id: 'keyword-auto-react',
+    handler: handleSave,
   })
 
   if (!loaded) return null
 
   return (
-    <ContentSection
-      title='Auto React'
-      desc='Automatically react to mentions based on comment sentiment.'
-    >
       <div className='space-y-5'>
         {/* Enable */}
         <div className='flex items-center justify-between'>
@@ -177,6 +170,5 @@ export function KeywordAutoReact() {
           </div>
         </div>
       </div>
-    </ContentSection>
   )
 }

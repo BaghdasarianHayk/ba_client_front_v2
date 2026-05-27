@@ -1,11 +1,10 @@
 import { useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { ChevronsUpDown, FolderOpen, Loader2 } from 'lucide-react'
+import { ArrowLeft, ChevronsUpDown, FolderOpen, Loader2 } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
@@ -47,10 +46,15 @@ export function TeamSwitcher() {
                 <img src='/images/brand_advocate_logo.png' alt='Brand Advocate' className='size-5' />
               </div>
               <div className='grid flex-1 text-start text-sm leading-tight'>
-                <span className='truncate font-semibold'>
+                <span className='flex items-center gap-1.5 truncate font-semibold'>
                   {isLoading
                     ? 'Loading…'
                     : currentProject?.brand_name ?? 'Select Project'}
+                  {currentProject?.brand_tags && currentProject.brand_tags.length > 0 && (
+                    <span className='inline-flex shrink-0 items-center rounded-md border border-primary/30 bg-primary/15 px-1.5 py-0.5 text-[11px] font-semibold text-primary'>
+                      {currentProject.brand_tags[0]}
+                    </span>
+                  )}
                 </span>
                 <span className='truncate text-xs text-muted-foreground'>
                   {currentProject
@@ -71,9 +75,13 @@ export function TeamSwitcher() {
             side={isMobile ? 'bottom' : 'right'}
             sideOffset={4}
           >
-            <DropdownMenuLabel className='text-xs text-muted-foreground'>
-              Projects
-            </DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={() => navigate({ to: '/' })}
+              className='gap-2 p-2 text-muted-foreground'
+            >
+              <ArrowLeft className='size-4' />
+              <span className='text-xs font-medium'>Back to Projects</span>
+            </DropdownMenuItem>
             {allProjects.map((project) => (
               <DropdownMenuItem
                 key={project.id}
@@ -87,8 +95,13 @@ export function TeamSwitcher() {
                   <FolderOpen className='size-4 shrink-0' />
                 </div>
                 <div className='grid flex-1 leading-tight'>
-                  <span className='truncate text-sm'>
+                  <span className='flex items-center gap-1.5 truncate text-sm'>
                     {project.brand_name}
+                    {project.brand_tags?.length > 0 && (
+                      <span className='inline-flex shrink-0 items-center rounded-md border border-primary/30 bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold text-primary'>
+                        {project.brand_tags[0]}
+                      </span>
+                    )}
                   </span>
                 </div>
                 {project.id === currentProject?.id && (

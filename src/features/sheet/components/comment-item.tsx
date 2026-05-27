@@ -413,7 +413,12 @@ export function CommentItem({ comment, platform, autoExpand = false, projectId, 
             </Avatar>
           )}
 
-          <span className='cursor-pointer text-sm font-medium text-foreground hover:underline'>
+          <span
+            className='cursor-pointer text-sm font-medium text-foreground hover:underline'
+            onClick={() => {
+              if (comment.postUrl) window.open(comment.postUrl, '_blank', 'noopener,noreferrer')
+            }}
+          >
             {comment.author.username}
           </span>
           <span className='text-xs text-muted-foreground'>•</span>

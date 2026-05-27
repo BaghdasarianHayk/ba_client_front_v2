@@ -6,10 +6,9 @@ import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { InfoTooltip } from '@/components/info-tooltip'
-import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { KeywordService } from '@/services/api/keyword-service'
-import { useSettingsSave } from '@/hooks/use-settings-save'
+import { useRegisterSave } from '@/hooks/use-settings-save'
 
 export function KeywordMonitoring() {
   const { keywordId } = useParams({ strict: false }) as { keywordId?: string }
@@ -48,20 +47,14 @@ export function KeywordMonitoring() {
     }
   }
 
-  const { register, unregister } = useSettingsSave()
-  useEffect(() => {
-    if (isNew) return
-    register({ handler: handleSave })
-    return unregister
+  useRegisterSave({
+    id: 'keyword-monitoring',
+    handler: handleSave,
   })
 
   if (!loaded) return null
 
   return (
-    <ContentSection
-      title='Monitoring'
-      desc='Control which posts appear as mentions and on which conditions.'
-    >
       <div className='space-y-5'>
         {/* Active toggle */}
         <div className='flex items-center justify-between'>
@@ -112,6 +105,5 @@ export function KeywordMonitoring() {
           />
         </div>
       </div>
-    </ContentSection>
   )
 }

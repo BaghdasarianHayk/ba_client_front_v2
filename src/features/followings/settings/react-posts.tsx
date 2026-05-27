@@ -6,10 +6,9 @@ import { cn } from '@/lib/utils'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
-import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { ChannelService } from '@/services/api/channel-service'
-import { useSettingsSave } from '@/hooks/use-settings-save'
+import { useRegisterSave } from '@/hooks/use-settings-save'
 
 type SentimentId = 'positive' | 'negative' | 'neutral' | 'question'
 type ReactionType = 'POSITIVE' | 'NEGATIVE' | null
@@ -65,17 +64,14 @@ export function FollowingReactPosts() {
     }
   }
 
-  const { register, unregister } = useSettingsSave()
-  useEffect(() => {
-    if (isNew) return
-    register({ handler: handleSave })
-    return unregister
+  useRegisterSave({
+    id: 'following-react-posts',
+    handler: handleSave,
   })
 
   if (!loaded) return null
 
   return (
-    <ContentSection title='React to Posts' desc='Automatically react to posts based on sentiment.'>
       <div className='space-y-5'>
         <div className='flex items-center justify-between'>
           <div>
@@ -135,6 +131,5 @@ export function FollowingReactPosts() {
           </div>
         </div>
       </div>
-    </ContentSection>
   )
 }

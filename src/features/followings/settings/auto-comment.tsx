@@ -6,10 +6,9 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
-import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { ChannelService } from '@/services/api/channel-service'
-import { useSettingsSave } from '@/hooks/use-settings-save'
+import { useRegisterSave } from '@/hooks/use-settings-save'
 
 export function FollowingAutoComment() {
   const { channelId } = useParams({ strict: false }) as { channelId?: string }
@@ -52,17 +51,14 @@ export function FollowingAutoComment() {
     }
   }
 
-  const { register, unregister } = useSettingsSave()
-  useEffect(() => {
-    if (isNew) return
-    register({ handler: handleSave })
-    return unregister
+  useRegisterSave({
+    id: 'following-auto-comment',
+    handler: handleSave,
   })
 
   if (!loaded) return null
 
   return (
-    <ContentSection title='Auto Comment' desc='Automatically reply to posts from this channel.'>
       <div className='space-y-5'>
         <div className='flex items-center justify-between'>
           <div>
@@ -112,6 +108,5 @@ export function FollowingAutoComment() {
           </div>
         </div>
       </div>
-    </ContentSection>
   )
 }

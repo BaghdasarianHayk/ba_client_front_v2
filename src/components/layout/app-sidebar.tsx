@@ -1,7 +1,10 @@
+import { Link } from '@tanstack/react-router'
+import { HelpCircle } from 'lucide-react'
 import { useLayout } from '@/context/layout-provider'
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarRail,
 } from '@/components/ui/sidebar'
@@ -35,6 +38,15 @@ export function AppSidebar() {
           <NavGroup key={props.title} {...props} />
         ))}
       </SidebarContent>
+      <SidebarFooter>
+        <Link
+          to='/help-center'
+          className='flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+        >
+          <HelpCircle className='size-4' />
+          <span>Help Center</span>
+        </Link>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )

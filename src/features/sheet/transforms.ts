@@ -48,7 +48,7 @@ export function mentionToPost(
     title: m.summary,
     body: m.content,
     sentiment: m.sentiment,
-    reasons: [{ type: 'keyword', keyword: m.keyword }],
+    reasons: [{ type: 'keyword', keyword: m.keyword, keywordId: keywordIdMap?.get(m.keyword) }],
     unifiedScore: m.unifiedScore,
     relevance: m.relevance,
     commentCount: m.commentCount,

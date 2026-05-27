@@ -174,12 +174,25 @@ function SidebarMenuCollapsedDropdown({
 }
 
 function checkIsActive(href: string, item: NavItem, mainNav = false) {
-  return (
-    href === item.url || // /endpint?search=param
-    href.split('?')[0] === item.url || // endpoint
-    !!item?.items?.filter((i) => i.url === href).length || // if child nav is active
-    (mainNav &&
-      href.split('/')[1] !== '' &&
-      href.split('/')[1] === item?.url?.split('/')[1])
-  )
+  const currentPath = href.split('?')[0]
+  const itemPath = item.url?.split('?')[0]
+
+  // Exact match
+  if (href === item.url || currentPath === itemPath) return true
+
+  // Child nav is active
+  if (item?.items?.some((i) => href === i.url || currentPath === i.url?.split('?')[0]))
+    return true
+
+  // Nested path: /keywords/123/settings → highlights "Keywords"
+  if (itemPath && itemPath !== '/') {
+    if (currentPath.startsWith(itemPath + '/') || currentPath === itemPath)
+      return true
+  }
+
+  // Collapsible: match first segment
+  if (mainNav && currentPath.split('/')[1] !== '' && currentPath.split('/')[1] === itemPath?.split('/')[1])
+    return true
+
+  return false
 }

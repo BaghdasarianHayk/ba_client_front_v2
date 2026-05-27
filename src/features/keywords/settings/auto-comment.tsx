@@ -7,10 +7,9 @@ import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { InfoTooltip } from '@/components/info-tooltip'
-import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { KeywordService } from '@/services/api/keyword-service'
-import { useSettingsSave } from '@/hooks/use-settings-save'
+import { useRegisterSave } from '@/hooks/use-settings-save'
 
 export function KeywordAutoComment() {
   const { keywordId } = useParams({ strict: false }) as { keywordId?: string }
@@ -55,20 +54,14 @@ export function KeywordAutoComment() {
     }
   }
 
-  const { register, unregister } = useSettingsSave()
-  useEffect(() => {
-    if (isNew) return
-    register({ handler: handleSave })
-    return unregister
+  useRegisterSave({
+    id: 'keyword-auto-comment',
+    handler: handleSave,
   })
 
   if (!loaded) return null
 
   return (
-    <ContentSection
-      title='Auto Comment'
-      desc='Automatically reply to mentions that match your criteria.'
-    >
       <div className='space-y-5'>
         {/* Enable */}
         <div className='flex items-center justify-between'>
@@ -151,6 +144,5 @@ export function KeywordAutoComment() {
           </div>
         </div>
       </div>
-    </ContentSection>
   )
 }

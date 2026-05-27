@@ -9,7 +9,7 @@ export type PostData = {
   title: string
   body: string
   sentiment: Sentiment
-  reasons: ({ type: 'keyword'; keyword: string } | { type: 'following' })[]
+  reasons: ({ type: 'keyword'; keyword: string; keywordId?: string } | { type: 'following' })[]
   unifiedScore: number
   relevance: number
   commentCount: number

@@ -91,7 +91,7 @@ const HELP_SECTIONS: HelpSection[] = [
   },
   {
     id: 'followings',
-    title: 'Followings',
+    title: 'Tracked Channels',
     icon: Radio,
     description: 'Telegram channels you monitor for new posts.',
     items: [

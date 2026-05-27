@@ -1,59 +1,32 @@
-import { useEffect, useState } from 'react'
-import { Outlet, useParams, useLocation } from '@tanstack/react-router'
-import { ArrowLeft, Eye, KeyRound, MessageSquare, SmilePlus } from 'lucide-react'
+import { useParams } from '@tanstack/react-router'
+import { ArrowLeft, Eye, KeyRound, MessageSquare, Settings2, SmilePlus } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { HeaderSaveButton } from '@/components/header-save-button'
-import { SidebarNav } from '@/features/settings/components/sidebar-nav'
+import { ScrollSpyNav, type ScrollSpyItem } from '@/components/scroll-spy-nav'
 import { KeywordGeneral } from './general'
 import { KeywordMonitoring } from './monitoring'
+import { KeywordAutoComment } from './auto-comment'
+import { KeywordAutoReact } from './auto-react'
+
+const NAV_ITEMS: ScrollSpyItem[] = [
+  { id: 'general', title: 'General', icon: <Settings2 size={18} /> },
+  { id: 'monitoring', title: 'Monitoring', icon: <Eye size={18} /> },
+  { id: 'auto-comment', title: 'Auto Comment', icon: <MessageSquare size={18} /> },
+  { id: 'auto-react', title: 'Auto React', icon: <SmilePlus size={18} /> },
+]
 
 export function KeywordSettings() {
   const { keywordId } = useParams({ strict: false }) as { keywordId?: string }
-  const { pathname } = useLocation()
   const isNew = !keywordId || keywordId === 'new'
-
-  const [loading, setLoading] = useState(!isNew)
-
-  useEffect(() => {
-    if (isNew) return
-    setLoading(true)
-    setLoading(false)
-  }, [isNew, keywordId])
-
-  const basePath = isNew ? '/keywords/new' : `/keywords/${keywordId}`
-
-  // Check if we're on the General/base tab (no sub-route)
-  const isGeneralTab =
-    pathname === basePath ||
-    pathname === `${basePath}/`
-
-  const sidebarNavItems = [
-    {
-      title: 'Monitoring',
-      href: `${basePath}/monitoring`,
-      icon: <Eye size={18} />,
-    },
-    {
-      title: 'Auto Comment',
-      href: `${basePath}/auto-comment`,
-      icon: <MessageSquare size={18} />,
-    },
-    {
-      title: 'Auto React',
-      href: `${basePath}/auto-react`,
-      icon: <SmilePlus size={18} />,
-    },
-  ]
 
   return (
     <>
-      <Header>
+      <Header fixed hideSidebarTrigger>
         <Button
           variant='ghost'
           size='icon'
@@ -65,9 +38,9 @@ export function KeywordSettings() {
         <Separator orientation='vertical' className='h-5' />
         <h1 className='flex items-center gap-1.5 text-sm font-semibold'>
           <KeyRound className='size-4 text-muted-foreground' />
-          {isNew ? 'New Keyword' : loading ? <Skeleton className='inline-block h-4 w-24' /> : 'Keyword Settings'}
+          {isNew ? 'New Keyword' : 'Keyword Settings'}
         </h1>
-        <div className='ms-auto flex items-center space-x-4'>
+        <div className='ms-auto flex items-center gap-2'>
           <HeaderSaveButton />
           <ThemeSwitch />
           <ProfileDropdown />
@@ -75,26 +48,34 @@ export function KeywordSettings() {
       </Header>
 
       <Main>
-        <div className='flex flex-1 flex-col'>
-          {/* General is always visible at the top */}
-          <div className='mb-6'>
-            <KeywordGeneral />
-          </div>
-
-          {/* Other tabs below */}
+        <div className='flex flex-1 flex-col gap-4 lg:flex-row lg:gap-12'>
+          {/* Sidebar nav — sticky on desktop, dropdown on mobile */}
           {!isNew && (
-            <>
-              <Separator className='mb-4' />
-              <div className='flex flex-1 flex-col space-y-2 md:space-y-2 lg:flex-row lg:space-y-0 lg:space-x-12'>
-                <aside className='top-0 lg:sticky lg:w-1/5'>
-                  <SidebarNav items={sidebarNavItems} />
-                </aside>
-                <div className='flex w-full p-1'>
-                  {isGeneralTab ? <KeywordMonitoring /> : <Outlet />}
-                </div>
-              </div>
-            </>
+            <aside className='top-20 shrink-0 self-start lg:sticky lg:w-48'>
+              <ScrollSpyNav items={NAV_ITEMS} />
+            </aside>
           )}
+
+          {/* Content — all sections on one scrollable page */}
+          <div className='flex-1 space-y-10'>
+            <section id='general' className='scroll-mt-20'>
+              <KeywordGeneral />
+            </section>
+
+            {!isNew && (
+              <>
+                <section id='monitoring' className='scroll-mt-20'>
+                  <KeywordMonitoring />
+                </section>
+                <section id='auto-comment' className='scroll-mt-20'>
+                  <KeywordAutoComment />
+                </section>
+                <section id='auto-react' className='scroll-mt-20'>
+                  <KeywordAutoReact />
+                </section>
+              </>
+            )}
+          </div>
         </div>
       </Main>
     </>

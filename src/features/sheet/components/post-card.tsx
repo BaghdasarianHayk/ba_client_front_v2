@@ -181,11 +181,14 @@ export function PostCard({ post, trackedPostId: trackedPostIdProp, onLoadComment
         <div className='flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground'>
           <PlatformIcon platform={post.platform} size='md' />
 
-          <span className='cursor-pointer font-semibold text-foreground hover:underline'>
+          <span
+            className='cursor-pointer font-semibold text-foreground hover:underline'
+            onClick={() => window.open(post.postUrl, '_blank', 'noopener,noreferrer')}
+          >
             {post.author.username}
           </span>
 
-          {/* Follow / Following — Telegram channels only */}
+          {/* Track / Tracked — Telegram channels only */}
           {post.platform === 'telegram' && (post.channelUsername || post.author.username) && (
             <>
               <span>•</span>
@@ -199,7 +202,7 @@ export function PostCard({ post, trackedPostId: trackedPostIdProp, onLoadComment
                     })
                   }
                 >
-                  Following
+                  Tracking
                 </button>
               ) : canEdit ? (
                 <Button
@@ -212,7 +215,7 @@ export function PostCard({ post, trackedPostId: trackedPostIdProp, onLoadComment
                     })
                   }
                 >
-                  Follow
+                  Track
                 </Button>
               ) : null}
             </>
@@ -223,10 +226,15 @@ export function PostCard({ post, trackedPostId: trackedPostIdProp, onLoadComment
               <span>•</span>
               {reason.type === 'following' ? (
                 <span className='cursor-pointer font-medium text-blue-600 hover:underline dark:text-blue-400'>
-                  Following
+                  Tracked Channel
                 </span>
               ) : (
-                <span className='cursor-pointer font-medium text-blue-600 hover:underline dark:text-blue-400'>
+                <span
+                  className='cursor-pointer font-medium text-blue-600 hover:underline dark:text-blue-400'
+                  onClick={() => {
+                    if (reason.keywordId) navigate({ to: `/keywords/${reason.keywordId}` })
+                  }}
+                >
                   {reason.keyword}
                 </span>
               )}

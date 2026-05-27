@@ -5,10 +5,9 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Textarea } from '@/components/ui/textarea'
 import { InfoTooltip } from '@/components/info-tooltip'
-import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { ChannelService } from '@/services/api/channel-service'
-import { useSettingsSave } from '@/hooks/use-settings-save'
+import { useRegisterSave } from '@/hooks/use-settings-save'
 
 export function FollowingMonitoring() {
   const { channelId } = useParams({ strict: false }) as { channelId?: string }
@@ -42,17 +41,14 @@ export function FollowingMonitoring() {
     }
   }
 
-  const { register, unregister } = useSettingsSave()
-  useEffect(() => {
-    if (isNew) return
-    register({ handler: handleSave })
-    return unregister
+  useRegisterSave({
+    id: 'following-monitoring',
+    handler: handleSave,
   })
 
   if (!loaded) return null
 
   return (
-    <ContentSection title='Monitoring' desc='Control which posts from this channel appear as mentions.'>
       <div className='space-y-5'>
         <div className='space-y-2'>
           <div className='flex items-center justify-between'>
@@ -81,6 +77,5 @@ export function FollowingMonitoring() {
           />
         </div>
       </div>
-    </ContentSection>
   )
 }

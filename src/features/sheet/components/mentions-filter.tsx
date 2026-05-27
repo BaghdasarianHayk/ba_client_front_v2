@@ -28,9 +28,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { Slider } from '@/components/ui/slider'
 import { PlatformSelector } from '@/components/shared/platform-selector'
 import { SentimentSelector } from '@/components/shared/sentiment-selector'
+import { RangeSliderWithInput } from '@/components/shared/range-slider-with-input'
 import { DateRangePresets } from '@/components/shared/date-range-presets'
 import type { PlatformId } from '@/components/platform-icon'
 import type { MentionFilters, MentionStats } from '@/services/api/mention-service'
@@ -367,26 +367,18 @@ export function MentionsFilter({ filters, stats, onApply, onClose }: Props) {
 
           {/* Relevance */}
           <Section label='Relevance'>
-            <div className='flex items-center gap-2'>
-              <span className='w-8 text-right text-xs text-muted-foreground'>{relRange[0]}</span>
-              <Slider value={relRange} onValueChange={(v) => setRelRange(v as [number, number])} min={0} max={100} step={1} className='flex-1' />
-              <span className='w-8 text-xs text-muted-foreground'>{relRange[1]}</span>
-            </div>
+            <RangeSliderWithInput value={relRange} onValueChange={setRelRange} min={0} max={100} step={1} />
           </Section>
 
           {/* Score */}
           <Section label='Reach Score'>
-            <div className='flex items-center gap-2'>
-              <span className='w-10 text-right text-xs text-muted-foreground'>{scoreRange[0]}</span>
-              <Slider value={scoreRange} onValueChange={(v) => setScoreRange(v as [number, number])} min={minScore} max={maxScore} step={10} className='flex-1' />
-              <span className='w-10 text-xs text-muted-foreground'>{scoreRange[1]}</span>
-            </div>
+            <RangeSliderWithInput value={scoreRange} onValueChange={setScoreRange} min={minScore} max={maxScore} step={10} />
           </Section>
         </div>
       </div>
 
       <Separator className='shrink-0' />
-      <div className='p-3'>
+      <div className='shrink-0 border-t bg-background p-3'>
         <Button className='w-full' onClick={handleApply}>Apply Filters</Button>
       </div>
     </div>

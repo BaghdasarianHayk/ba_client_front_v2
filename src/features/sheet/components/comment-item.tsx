@@ -46,6 +46,7 @@ import {
 import { type PlatformId } from '@/components/platform-icon'
 import { PosterService, POSTER_TASK_COMPLETED_EVENT, type PosterPlatform } from '@/services/api/poster-service'
 import { useViewerMode } from '@/hooks/use-viewer-mode'
+import { getAuthorProfileUrl } from '@/lib/platform-profile-url'
 import { type CommentData } from '../types'
 import { CommentRouter } from './comment-router'
 import { ReplyCompose, type ThreadComment } from './reply-compose'
@@ -416,7 +417,8 @@ export function CommentItem({ comment, platform, autoExpand = false, projectId, 
           <span
             className='cursor-pointer text-sm font-medium text-foreground hover:underline'
             onClick={() => {
-              if (comment.postUrl) window.open(comment.postUrl, '_blank', 'noopener,noreferrer')
+              const profileUrl = getAuthorProfileUrl(platform, comment.author.username)
+              if (profileUrl) window.open(profileUrl, '_blank', 'noopener,noreferrer')
             }}
           >
             {comment.author.username}

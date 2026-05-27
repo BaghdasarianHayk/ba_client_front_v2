@@ -44,6 +44,7 @@ import { PlatformIcon } from '@/components/platform-icon'
 import { PosterService, POSTER_TASK_COMPLETED_EVENT, type PosterPlatform } from '@/services/api/poster-service'
 import { highlightKeyword } from '@/lib/highlight'
 import { useViewerMode } from '@/hooks/use-viewer-mode'
+import { getAuthorProfileUrl } from '@/lib/platform-profile-url'
 import { type PostData, type Sentiment } from '../types'
 import { CommentsTree } from './comment-item'
 
@@ -183,7 +184,10 @@ export function PostCard({ post, trackedPostId: trackedPostIdProp, onLoadComment
 
           <span
             className='cursor-pointer font-semibold text-foreground hover:underline'
-            onClick={() => window.open(post.postUrl, '_blank', 'noopener,noreferrer')}
+            onClick={() => {
+              const profileUrl = getAuthorProfileUrl(post.platform, post.author.username)
+              if (profileUrl) window.open(profileUrl, '_blank', 'noopener,noreferrer')
+            }}
           >
             {post.author.username}
           </span>

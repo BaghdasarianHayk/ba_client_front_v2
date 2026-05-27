@@ -7,8 +7,6 @@ import {
   Eye,
   KeyRound,
   Palette,
-  Radio,
-  Rss,
   Settings,
   Users,
   Zap,
@@ -47,36 +45,25 @@ export const sidebarData: SidebarData = {
       ],
     },
     {
-      title: 'Auto Actions',
-      items: [
-        {
-          title: 'All Auto Actions',
-          url: '/auto-actions',
-          icon: Zap,
-          description: 'Overview of all automation rules',
-        },
-        {
-          title: 'Tracked Channels',
-          url: '/followings',
-          icon: Radio,
-          description: 'Telegram channels you monitor',
-        },
-        {
-          title: 'Tracked Posts',
-          url: '/tracked-posts',
-          icon: Rss,
-          description: 'Individual posts monitored for comments',
-        },
-      ],
-    },
-    {
       title: 'Project',
       items: [
+        {
+          title: 'Keywords',
+          url: '/keywords',
+          icon: KeyRound,
+          description: 'Search terms monitored across platforms',
+        },
         {
           title: 'Knowledge Base',
           url: '/knowledge-base',
           icon: BookOpen,
           description: 'Documents AI uses for generating replies',
+        },
+        {
+          title: 'Auto Actions',
+          url: '/auto-actions',
+          icon: Zap,
+          description: 'Overview of all automation rules',
         },
         {
           title: 'Settings',
@@ -87,11 +74,6 @@ export const sidebarData: SidebarData = {
               title: 'Project',
               url: '/settings',
               icon: Building2,
-            },
-            {
-              title: 'Keywords',
-              url: '/keywords',
-              icon: KeyRound,
             },
             {
               title: 'Comments Preview',

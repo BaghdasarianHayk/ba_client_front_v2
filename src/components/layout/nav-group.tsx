@@ -185,8 +185,9 @@ function checkIsActive(href: string, item: NavItem, mainNav = false) {
     return true
 
   // Nested path: /keywords/123/settings → highlights "Keywords"
-  if (itemPath && itemPath !== '/') {
-    if (currentPath.startsWith(itemPath + '/') || currentPath === itemPath)
+  // But skip this for items inside a collapsible (they should use exact match only)
+  if (!mainNav && itemPath && itemPath !== '/' && !itemPath.startsWith('/settings')) {
+    if (currentPath.startsWith(itemPath + '/'))
       return true
   }
 

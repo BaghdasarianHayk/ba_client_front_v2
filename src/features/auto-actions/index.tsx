@@ -2,23 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { formatDistanceToNow } from 'date-fns'
 import {
-  Angry,
-  ArrowRight,
   Blend,
-  Bot,
   KeyRound,
-  Megaphone,
-  Meh,
-  MessageCircleQuestion,
   MessageSquarePlus,
   MoreHorizontal,
   Pencil,
   Radio,
   RefreshCw,
   Rss,
-  Smile,
-  ThumbsDown,
-  ThumbsUp,
   Zap,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -52,6 +43,7 @@ import { EmptyState } from '@/components/empty-state'
 import { PageDescription } from '@/components/page-description'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { Switch } from '@/components/ui/switch'
 import { PlatformIcon, type PlatformId } from '@/components/platform-icon'
 import { useProjectStore } from '@/stores/project-store'
 import { KeywordService, type Keyword } from '@/services/api/keyword-service'
@@ -67,14 +59,7 @@ import { useViewerMode } from '@/hooks/use-viewer-mode'
 
 // ─── Sentiment icons ─────────────────────────────────────────────────────────
 
-const SENT = {
-  positive: { icon: Smile, color: 'text-green-600 dark:text-green-400' },
-  neutral: { icon: Meh, color: 'text-amber-600 dark:text-amber-400' },
-  negative: { icon: Angry, color: 'text-red-600 dark:text-red-400' },
-  question: { icon: MessageCircleQuestion, color: 'text-purple-600 dark:text-purple-400' },
-} as const
-
-type SentimentId = keyof typeof SENT
+type SentimentId = 'positive' | 'negative' | 'neutral' | 'question'
 
 // ─── Unified row ─────────────────────────────────────────────────────────────
 
@@ -99,6 +84,7 @@ interface Row {
   }
   extra?: string // mentions count, posts count, etc.
   settingsUrl: string
+  externalUrl?: string // link to the channel or post on the platform
   updatedAt: string
 }
 
@@ -167,6 +153,66 @@ export function AutoActionsPage() {
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
+  const handleToggleActive = async (row: Row) => {
+    if (!projectId) return
+    try {
+      if (row.type === 'keyword') {
+        if (row.isActive) await KeywordService.deactivate(row.id)
+        else await KeywordService.activate(row.id)
+      } else if (row.type === 'following') {
+        await ChannelService.updateChannel(projectId, row.id, {
+          status: row.isActive ? 'paused' : 'active',
+        })
+      } else if (row.type === 'tracked-post') {
+        await PostService.updatePost(projectId, row.id, {
+          status: row.isActive ? 'inactive' : 'active',
+        })
+      }
+      // Optimistic update
+      setKeywords((prev) => prev.map((k) => k.id === row.id ? { ...k, isActive: !row.isActive } : k))
+      setFollowings((prev) => prev.map((f) => f.id === row.id ? { ...f, status: row.isActive ? 'paused' as const : 'active' as const } : f))
+      setTrackedPosts((prev) => prev.map((tp) => tp.id === row.id ? { ...tp, status: row.isActive ? 'inactive' as const : 'active' as const } : tp))
+    } catch (err: any) {
+      toast.error(err.detail || err.message || 'Failed to toggle')
+    }
+  }
+
+  const handleToggleAutoReply = async (row: Row) => {
+    if (!projectId) return
+    try {
+      const enable = !row.autoReply
+      const threshold = enable ? 70 : 101
+      if (row.type === 'keyword') {
+        await KeywordService.updateKeyword(row.id, { autoreply_mention_threshold: threshold } as any)
+      } else if (row.type === 'following') {
+        await ChannelService.updateChannel(projectId, row.id, { autoreply_post_threshold: threshold })
+      } else if (row.type === 'tracked-post') {
+        await PostService.updatePost(projectId, row.id, { autoreply_comment_threshold: threshold })
+      }
+      fetchAll()
+    } catch (err: any) {
+      toast.error(err.detail || err.message || 'Failed to toggle')
+    }
+  }
+
+  const handleToggleAutoReact = async (row: Row) => {
+    if (!projectId) return
+    try {
+      const enable = !row.autoReact
+      const threshold = enable ? 70 : 101
+      if (row.type === 'keyword') {
+        await KeywordService.updateKeyword(row.id, { autoreact_mention_threshold: threshold } as any)
+      } else if (row.type === 'following') {
+        await ChannelService.updateChannel(projectId, row.id, { autoreact_post_threshold: threshold })
+      } else if (row.type === 'tracked-post') {
+        await PostService.updatePost(projectId, row.id, { autoreact_comment_threshold: threshold })
+      }
+      fetchAll()
+    } catch (err: any) {
+      toast.error(err.detail || err.message || 'Failed to toggle')
+    }
+  }
+
   const rows = useMemo<Row[]>(() => {
     const r: Row[] = []
 
@@ -206,6 +252,7 @@ export function AutoActionsPage() {
           ? { threshold: d.autoReact.threshold, sentiments: d.autoReact.sentiments }
           : null,
         settingsUrl: `/followings/${f.id}/settings`,
+        externalUrl: `https://t.me/${f.username}`,
         updatedAt: f.lastSync,
       })
     }
@@ -225,6 +272,7 @@ export function AutoActionsPage() {
           ? { threshold: tp.autoReact.threshold, sentiments: tp.autoReact.sentiments }
           : null,
         settingsUrl: `/tracked-posts/${tp.id}/settings`,
+        externalUrl: tp.url,
         updatedAt: tp.createdAt,
       })
     }
@@ -344,7 +392,19 @@ export function AutoActionsPage() {
                             <TooltipContent>{meta.label}</TooltipContent>
                           </Tooltip>
                           <div className='min-w-0'>
-                            <span className='block truncate text-sm font-medium'>{row.name}</span>
+                            {row.externalUrl ? (
+                              <a
+                                href={row.externalUrl}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                onClick={(e) => e.stopPropagation()}
+                                className='block truncate text-sm font-medium underline decoration-muted-foreground/40 underline-offset-2 hover:decoration-foreground'
+                              >
+                                {row.name}
+                              </a>
+                            ) : (
+                              <span className='block truncate text-sm font-medium'>{row.name}</span>
+                            )}
                             {row.subtitle && <span className='block truncate text-[11px] text-muted-foreground'>{row.subtitle}</span>}
                           </div>
                         </div>
@@ -359,58 +419,40 @@ export function AutoActionsPage() {
 
                       {/* Active */}
                       <TableCell className='py-2 text-center' onClick={(e) => e.stopPropagation()}>
-                        <span className={cn(
-                          'inline-block size-2.5 rounded-full',
-                          row.isActive ? 'bg-green-500' : 'bg-muted-foreground/30'
-                        )} />
+                        <Switch
+                          checked={row.isActive}
+                          onCheckedChange={() => handleToggleActive(row)}
+                        />
                       </TableCell>
 
                       {/* Auto Reply */}
-                      <TableCell className='hidden py-2 md:table-cell'>
-                        {row.autoReply ? (
-                          <div className='flex flex-wrap items-center justify-center gap-1'>
+                      <TableCell className='hidden py-2 md:table-cell' onClick={(e) => e.stopPropagation()}>
+                        <div className='flex items-center justify-center gap-2'>
+                          <Switch
+                            checked={!!row.autoReply}
+                            onCheckedChange={() => handleToggleAutoReply(row)}
+                          />
+                          {row.autoReply && (
                             <Badge variant='outline' className='gap-1 rounded-full px-1.5 py-0.5 text-[11px]'>
                               <Blend className='!size-3.5' />≥{row.autoReply.threshold}%
                             </Badge>
-                            {(row.autoReply.scoreThreshold ?? 0) > 0 && (
-                              <Badge variant='outline' className='gap-1 rounded-full px-1.5 py-0.5 text-[11px]'>
-                                <Megaphone className='!size-3.5' />≥{row.autoReply.scoreThreshold}
-                              </Badge>
-                            )}
-                            {((row.autoReply.countMin ?? 0) > 0 || (row.autoReply.countMax ?? 10) < 10) && (
-                              <Badge variant='outline' className='gap-1 rounded-full px-1.5 py-0.5 text-[11px]'>
-                                <Bot className='!size-3.5' />{row.autoReply.countMin ?? 0}–{row.autoReply.countMax ?? 10}
-                              </Badge>
-                            )}
-                          </div>
-                        ) : (
-                          <span className='block text-center text-xs text-muted-foreground'>off</span>
-                        )}
+                          )}
+                        </div>
                       </TableCell>
 
                       {/* Auto React */}
-                      <TableCell className='hidden py-2 md:table-cell'>
-                        {row.autoReact ? (
-                          <div className='flex flex-wrap items-center justify-center gap-1'>
+                      <TableCell className='hidden py-2 md:table-cell' onClick={(e) => e.stopPropagation()}>
+                        <div className='flex items-center justify-center gap-2'>
+                          <Switch
+                            checked={!!row.autoReact}
+                            onCheckedChange={() => handleToggleAutoReact(row)}
+                          />
+                          {row.autoReact && (
                             <Badge variant='outline' className='gap-1 rounded-full px-1.5 py-0.5 text-[11px]'>
                               <Blend className='!size-3.5' />≥{row.autoReact.threshold}%
                             </Badge>
-                            {(Object.entries(row.autoReact.sentiments) as [SentimentId, string | null][])
-                              .filter(([, r]) => r != null)
-                              .map(([s, r]) => {
-                                const { icon: SIcon, color } = SENT[s]
-                                return (
-                                  <Badge key={s} variant='outline' className='gap-0.5 rounded-full py-0.5 pl-1 pr-1.5 text-[11px]'>
-                                    <SIcon className={`!size-3.5 ${color}`} />
-                                    <ArrowRight className='!size-3 text-muted-foreground' />
-                                    {r === 'POSITIVE' ? <ThumbsUp className='!size-3.5 text-green-600 dark:text-green-400' /> : <ThumbsDown className='!size-3.5 text-red-600 dark:text-red-400' />}
-                                  </Badge>
-                                )
-                              })}
-                          </div>
-                        ) : (
-                          <span className='block text-center text-xs text-muted-foreground'>off</span>
-                        )}
+                          )}
+                        </div>
                       </TableCell>
 
                       {/* Info */}

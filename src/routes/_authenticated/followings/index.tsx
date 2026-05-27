@@ -1,6 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { FollowingsPage } from '@/features/followings'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authenticated/followings/')({
-  component: FollowingsPage,
+  beforeLoad: () => {
+    throw redirect({ to: '/sheet' })
+  },
 })

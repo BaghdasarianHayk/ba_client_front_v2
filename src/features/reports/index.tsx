@@ -136,6 +136,57 @@ const TOOLTIP_WRAPPER_STYLE = {
   zIndex: 9999,
 }
 
+// Custom Legend renderer that dims both icon and text for inactive items
+function ChartLegend({
+  payload,
+  onClick,
+  activeKeys,
+  data,
+}: {
+  payload?: readonly any[]
+  onClick?: (dataKey: string) => void
+  activeKeys: Set<string>
+  data?: any[]
+}) {
+  if (!payload) return null
+  const hasActive = activeKeys.size > 0
+  return (
+    <div className='flex flex-wrap items-center justify-center gap-x-4 gap-y-1 py-1 text-[11px]'>
+      {payload.map((entry: any) => {
+        const isActive = activeKeys.has(entry.dataKey)
+        const dimmed = hasActive && !isActive
+        // Calculate count & percentage if data is provided
+        let suffix = ''
+        if (data) {
+          const total = data.reduce((sum, d) => sum + ((d[entry.dataKey] as number) || 0), 0)
+          const grandTotal = data.reduce((sum, d) => {
+            let s = 0
+            for (const e of payload) s += (d[e.dataKey] as number) || 0
+            return sum + s
+          }, 0)
+          const pct = grandTotal > 0 ? Math.round((total / grandTotal) * 100) : 0
+          suffix = ` (${total.toLocaleString()}, ${pct}%)`
+        }
+        return (
+          <button
+            key={entry.dataKey}
+            type='button'
+            onClick={() => onClick?.(entry.dataKey)}
+            className='inline-flex cursor-pointer items-center gap-1.5 transition-opacity'
+            style={{ opacity: dimmed ? 0.3 : 1 }}
+          >
+            <span
+              className='inline-block size-2.5 rounded-sm'
+              style={{ backgroundColor: entry.color }}
+            />
+            <span>{entry.value}{suffix}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export function ReportsPage() {
@@ -511,17 +562,9 @@ export function ReportsPage() {
                   <YAxis tick={{ fontSize: 10 }} className='fill-muted-foreground' allowDecimals={false} width={30} />
                   <RTooltip contentStyle={TOOLTIP_STYLE} wrapperStyle={TOOLTIP_WRAPPER_STYLE} />
                   <Legend 
-                    wrapperStyle={{ fontSize: 11, cursor: 'pointer' }} 
-                    onClick={(e) => handleSentimentLegendClick(e.dataKey as string)}
-                    formatter={(value: string, entry: any) => {
-                      const total = mentionsByDayWithTotal.reduce((sum, d) => sum + (d[entry.dataKey as keyof typeof d] as number || 0), 0)
-                      const grandTotal = mentionsByDayWithTotal.reduce((sum, d) => sum + (d.positive as number || 0) + (d.neutral as number || 0) + (d.negative as number || 0) + (d.question as number || 0), 0)
-                      const pct = Math.round((total / grandTotal) * 100)
-                      const isActive = activeSentiments.has(entry.dataKey)
-                      const hasActive = activeSentiments.size > 0
-                      const opacity = hasActive && !isActive ? 0.4 : 1
-                      return <span style={{ opacity }}>{value} ({total}, {pct}%)</span>
-                    }}
+                    content={({ payload }) => (
+                      <ChartLegend payload={payload} onClick={handleSentimentLegendClick} activeKeys={activeSentiments} data={mentionsByDayWithTotal} />
+                    )}
                   />
                   <Area type='monotone' dataKey='positive' name='Positive' fill='#22c55e' stroke='#22c55e' fillOpacity={activeSentiments.size === 0 || activeSentiments.has('positive') ? 0.3 : 0.05} strokeOpacity={activeSentiments.size === 0 || activeSentiments.has('positive') ? 1 : 0.3} strokeWidth={2} />
                   <Area type='monotone' dataKey='neutral' name='Neutral' fill='#f59e0b' stroke='#f59e0b' fillOpacity={activeSentiments.size === 0 || activeSentiments.has('neutral') ? 0.3 : 0.05} strokeOpacity={activeSentiments.size === 0 || activeSentiments.has('neutral') ? 1 : 0.3} strokeWidth={2} />
@@ -552,17 +595,9 @@ export function ReportsPage() {
                   <YAxis tick={{ fontSize: 10 }} className='fill-muted-foreground' allowDecimals={false} width={30} />
                   <RTooltip contentStyle={TOOLTIP_STYLE} wrapperStyle={TOOLTIP_WRAPPER_STYLE} />
                   <Legend 
-                    wrapperStyle={{ fontSize: 11, cursor: 'pointer' }} 
-                    onClick={(e) => handlePlatformLegendClick(e.dataKey as string)}
-                    formatter={(value: string, entry: any) => {
-                      const total = mentionsByPlatformWithTotal.reduce((sum, d) => sum + (d[entry.dataKey as keyof typeof d] as number || 0), 0)
-                      const grandTotal = mentionsByPlatformWithTotal.reduce((sum, d) => sum + (d.telegram as number || 0) + (d.reddit as number || 0) + (d.youtube as number || 0) + (d.x as number || 0) + (d.instagram as number || 0) + (d.facebook as number || 0) + (d.tiktok as number || 0) + (d.web as number || 0), 0)
-                      const pct = Math.round((total / grandTotal) * 100)
-                      const isActive = activePlatforms.has(entry.dataKey)
-                      const hasActive = activePlatforms.size > 0
-                      const opacity = hasActive && !isActive ? 0.4 : 1
-                      return <span style={{ opacity }}>{value} ({total}, {pct}%)</span>
-                    }}
+                    content={({ payload }) => (
+                      <ChartLegend payload={payload} onClick={handlePlatformLegendClick} activeKeys={activePlatforms} data={mentionsByPlatformWithTotal} />
+                    )}
                   />
                   {Object.entries(CHART_PLATFORM_COLORS).map(([key, color]) => (
                     <Area key={key} type='monotone' dataKey={key} name={key.charAt(0).toUpperCase() + key.slice(1)} fill={color} stroke={color} fillOpacity={activePlatforms.size === 0 || activePlatforms.has(key) ? 0.3 : 0.05} strokeOpacity={activePlatforms.size === 0 || activePlatforms.has(key) ? 1 : 0.3} strokeWidth={2} />
@@ -594,17 +629,9 @@ export function ReportsPage() {
                 <YAxis tick={{ fontSize: 10 }} className='fill-muted-foreground' allowDecimals={false} width={40} />
                 <RTooltip contentStyle={TOOLTIP_STYLE} wrapperStyle={TOOLTIP_WRAPPER_STYLE} />
                 <Legend 
-                  wrapperStyle={{ fontSize: 11, cursor: 'pointer' }} 
-                  onClick={(e) => handleReachPlatformLegendClick(e.dataKey as string)}
-                  formatter={(value: string, entry: any) => {
-                    const total = reachScoreWithTotal.reduce((sum, d) => sum + (d[entry.dataKey as keyof typeof d] as number || 0), 0)
-                    const grandTotal = reachScoreWithTotal.reduce((sum, d) => sum + (d.telegram as number || 0) + (d.reddit as number || 0) + (d.youtube as number || 0) + (d.x as number || 0) + (d.instagram as number || 0) + (d.facebook as number || 0) + (d.tiktok as number || 0) + (d.web as number || 0), 0)
-                    const pct = Math.round((total / grandTotal) * 100)
-                    const isActive = activeReachPlatforms.has(entry.dataKey)
-                    const hasActive = activeReachPlatforms.size > 0
-                    const opacity = hasActive && !isActive ? 0.4 : 1
-                    return <span style={{ opacity }}>{value} ({total.toLocaleString()}, {pct}%)</span>
-                  }}
+                  content={({ payload }) => (
+                    <ChartLegend payload={payload} onClick={handleReachPlatformLegendClick} activeKeys={activeReachPlatforms} data={reachScoreWithTotal} />
+                  )}
                 />
                 {Object.entries(CHART_PLATFORM_COLORS).map(([key, color]) => (
                   <Area key={key} type='monotone' dataKey={key} name={key.charAt(0).toUpperCase() + key.slice(1)} fill={color} stroke={color} fillOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has(key) ? 0.3 : 0.05} strokeOpacity={activeReachPlatforms.size === 0 || activeReachPlatforms.has(key) ? 1 : 0.3} strokeWidth={2} />

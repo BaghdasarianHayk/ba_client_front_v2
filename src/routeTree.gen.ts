@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ClerkRouteRouteImport } from './routes/clerk/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthMagicRouteImport } from './routes/auth/magic'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as errors500RouteImport } from './routes/(errors)/500'
 import { Route as errors404RouteImport } from './routes/(errors)/404'
@@ -87,6 +88,11 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthMagicRoute = AuthMagicRouteImport.update({
+  id: '/auth/magic',
+  path: '/auth/magic',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const errors503Route = errors503RouteImport.update({
   id: '/(errors)/503',
@@ -447,6 +453,7 @@ export interface FileRoutesByFullPath {
   '/404': typeof errors404Route
   '/500': typeof errors500Route
   '/503': typeof errors503Route
+  '/auth/magic': typeof AuthMagicRoute
   '/followings/new': typeof AuthenticatedFollowingsNewRouteRouteWithChildren
   '/keywords/$keywordId': typeof AuthenticatedKeywordsKeywordIdRouteRouteWithChildren
   '/tracked-posts/new': typeof AuthenticatedTrackedPostsNewRouteRouteWithChildren
@@ -508,6 +515,7 @@ export interface FileRoutesByTo {
   '/404': typeof errors404Route
   '/500': typeof errors500Route
   '/503': typeof errors503Route
+  '/auth/magic': typeof AuthMagicRoute
   '/': typeof AuthenticatedIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/settings/access': typeof AuthenticatedSettingsAccessRoute
@@ -570,6 +578,7 @@ export interface FileRoutesById {
   '/(errors)/404': typeof errors404Route
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
+  '/auth/magic': typeof AuthMagicRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/followings/new': typeof AuthenticatedFollowingsNewRouteRouteWithChildren
   '/_authenticated/keywords/$keywordId': typeof AuthenticatedKeywordsKeywordIdRouteRouteWithChildren
@@ -636,6 +645,7 @@ export interface FileRouteTypes {
     | '/404'
     | '/500'
     | '/503'
+    | '/auth/magic'
     | '/followings/new'
     | '/keywords/$keywordId'
     | '/tracked-posts/new'
@@ -697,6 +707,7 @@ export interface FileRouteTypes {
     | '/404'
     | '/500'
     | '/503'
+    | '/auth/magic'
     | '/'
     | '/errors/$error'
     | '/settings/access'
@@ -758,6 +769,7 @@ export interface FileRouteTypes {
     | '/(errors)/404'
     | '/(errors)/500'
     | '/(errors)/503'
+    | '/auth/magic'
     | '/_authenticated/'
     | '/_authenticated/followings/new'
     | '/_authenticated/keywords/$keywordId'
@@ -822,6 +834,7 @@ export interface RootRouteChildren {
   errors404Route: typeof errors404Route
   errors500Route: typeof errors500Route
   errors503Route: typeof errors503Route
+  AuthMagicRoute: typeof AuthMagicRoute
   AuthGoogleCallbackRoute: typeof AuthGoogleCallbackRoute
 }
 
@@ -847,6 +860,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/auth/magic': {
+      id: '/auth/magic'
+      path: '/auth/magic'
+      fullPath: '/auth/magic'
+      preLoaderRoute: typeof AuthMagicRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/(errors)/503': {
       id: '/(errors)/503'
@@ -1525,6 +1545,7 @@ const rootRouteChildren: RootRouteChildren = {
   errors404Route: errors404Route,
   errors500Route: errors500Route,
   errors503Route: errors503Route,
+  AuthMagicRoute: AuthMagicRoute,
   AuthGoogleCallbackRoute: AuthGoogleCallbackRoute,
 }
 export const routeTree = rootRouteImport

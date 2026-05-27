@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores/auth-store'
 
 export function MagicLogin() {
   const navigate = useNavigate()
-  const { token } = useSearch({ from: '/(auth)/magic-login' })
+  const { token } = useSearch({ strict: false }) as { token?: string }
   const { magicLogin } = useAuthStore()
 
   useEffect(() => {

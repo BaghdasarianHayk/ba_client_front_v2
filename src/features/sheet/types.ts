@@ -2,8 +2,12 @@ import type { PlatformId } from '@/components/platform-icon'
 
 export type Sentiment = 'positive' | 'neutral' | 'negative' | 'question'
 
+export type PostSource = 'mention' | 'channel' | 'tracked-post'
+
 export type PostData = {
   id: string
+  /** Source of this post for tab filtering */
+  source: PostSource
   author: { username: string; avatar?: string }
   platform: PlatformId
   title: string

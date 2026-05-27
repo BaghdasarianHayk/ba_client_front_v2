@@ -28,11 +28,11 @@ type AppearanceFormValues = z.infer<typeof appearanceFormSchema>
 
 export function AppearanceForm() {
   const { font, setFont } = useFont()
-  const { theme, setTheme } = useTheme()
+  const { resolvedTheme, setTheme } = useTheme()
 
   // This can come from your database or API.
   const defaultValues: Partial<AppearanceFormValues> = {
-    theme: theme as 'light' | 'dark',
+    theme: resolvedTheme,
     font,
   }
 
@@ -43,7 +43,7 @@ export function AppearanceForm() {
 
   function onSubmit(data: AppearanceFormValues) {
     if (data.font != font) setFont(data.font)
-    if (data.theme != theme) setTheme(data.theme)
+    if (data.theme != resolvedTheme) setTheme(data.theme)
 
     showSubmittedData(data)
   }

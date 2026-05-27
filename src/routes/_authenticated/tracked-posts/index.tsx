@@ -1,6 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { TrackedPostsPage } from '@/features/tracked-posts'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authenticated/tracked-posts/')({
-  component: TrackedPostsPage,
+  beforeLoad: () => {
+    throw redirect({ to: '/sheet' })
+  },
 })

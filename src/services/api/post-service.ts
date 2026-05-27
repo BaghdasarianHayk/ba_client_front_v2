@@ -224,6 +224,7 @@ function transformComment(c: APIPostComment): CommentData {
 export function trackedPostToPostData(tp: TrackedPost): PostData {
   return {
     id: tp.id,
+    source: 'tracked-post',
     author: { username: tp.author },
     platform: 'telegram',
     title: tp.summary,
@@ -240,6 +241,9 @@ export function trackedPostToPostData(tp: TrackedPost): PostData {
     isDeleted: tp.isDeleted,
     commentable: true,
     comments: [],
+    trackedPostId: tp.id,
+    trackedPostActive: tp.status === 'active',
+    channelUsername: tp.channelUsername,
   }
 }
 

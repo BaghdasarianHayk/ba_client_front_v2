@@ -828,7 +828,7 @@ export function CommentsTree({
   const [showAll, setShowAll] = useState(false)
   const filtered = filterBySentiment(comments, selectedSentiments)
 
-  // Default view: top-N most relevant root comments + own comments.
+  // Default view: top-5 most relevant root comments + own comments.
   // When sentiment filter is active or user clicked "Show all", show everything.
   const TOP_N = 5
   const displayComments = useMemo(() => {

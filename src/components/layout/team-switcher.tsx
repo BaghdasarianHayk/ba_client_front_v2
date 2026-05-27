@@ -5,6 +5,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
@@ -82,33 +84,76 @@ export function TeamSwitcher() {
               <ArrowLeft className='size-4' />
               <span className='text-xs font-medium'>Back to Projects</span>
             </DropdownMenuItem>
-            {allProjects.map((project) => (
-              <DropdownMenuItem
-                key={project.id}
-                onClick={() => {
-                  setCurrentProject(project)
-                  navigate({ to: '/sheet' })
-                }}
-                className='gap-2 p-2'
-              >
-                <div className='flex size-6 items-center justify-center rounded-sm border'>
-                  <FolderOpen className='size-4 shrink-0' />
-                </div>
-                <div className='grid flex-1 leading-tight'>
-                  <span className='flex items-center gap-1.5 truncate text-sm'>
-                    {project.brand_name}
-                    {project.brand_tags?.length > 0 && (
-                      <span className='inline-flex shrink-0 items-center rounded-md border border-primary/30 bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold text-primary'>
-                        {project.brand_tags[0]}
+            <DropdownMenuSeparator />
+            {projects.length > 0 && (
+              <>
+                <DropdownMenuLabel className='text-xs text-muted-foreground'>
+                  My Projects
+                </DropdownMenuLabel>
+                {projects.map((project) => (
+                  <DropdownMenuItem
+                    key={project.id}
+                    onClick={() => {
+                      setCurrentProject(project)
+                      navigate({ to: '/sheet' })
+                    }}
+                    className='gap-2 p-2'
+                  >
+                    <div className='flex size-6 items-center justify-center rounded-sm border'>
+                      <FolderOpen className='size-4 shrink-0' />
+                    </div>
+                    <div className='grid flex-1 leading-tight'>
+                      <span className='flex items-center gap-1.5 truncate text-sm'>
+                        {project.brand_name}
+                        {project.brand_tags?.length > 0 && (
+                          <span className='inline-flex shrink-0 items-center rounded-md border border-primary/30 bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold text-primary'>
+                            {project.brand_tags[0]}
+                          </span>
+                        )}
                       </span>
+                    </div>
+                    {project.id === currentProject?.id && (
+                      <span className='size-2 rounded-full bg-primary' />
                     )}
-                  </span>
-                </div>
-                {project.id === currentProject?.id && (
-                  <span className='size-2 rounded-full bg-primary' />
-                )}
-              </DropdownMenuItem>
-            ))}
+                  </DropdownMenuItem>
+                ))}
+              </>
+            )}
+            {sharedProjects.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className='text-xs text-muted-foreground'>
+                  Shared with me
+                </DropdownMenuLabel>
+                {sharedProjects.map((project) => (
+                  <DropdownMenuItem
+                    key={project.id}
+                    onClick={() => {
+                      setCurrentProject(project)
+                      navigate({ to: '/sheet' })
+                    }}
+                    className='gap-2 p-2'
+                  >
+                    <div className='flex size-6 items-center justify-center rounded-sm border'>
+                      <FolderOpen className='size-4 shrink-0' />
+                    </div>
+                    <div className='grid flex-1 leading-tight'>
+                      <span className='flex items-center gap-1.5 truncate text-sm'>
+                        {project.brand_name}
+                        {project.brand_tags?.length > 0 && (
+                          <span className='inline-flex shrink-0 items-center rounded-md border border-primary/30 bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold text-primary'>
+                            {project.brand_tags[0]}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    {project.id === currentProject?.id && (
+                      <span className='size-2 rounded-full bg-primary' />
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </>
+            )}
             {allProjects.length === 0 && !isLoading && (
               <div className='p-4 text-center text-sm text-muted-foreground'>
                 No projects found

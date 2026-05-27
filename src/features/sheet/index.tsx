@@ -7,6 +7,8 @@ import {
   CalendarIcon,
   Filter,
   Loader2,
+  Radio,
+  Rss,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -43,7 +45,7 @@ import {
   type MentionStats,
 } from '@/services/api/mention-service'
 import { useMentionFilters } from '@/hooks/use-mention-filters'
-import { PostService } from '@/services/api/post-service'
+import { PostService, trackedPostToPostData } from '@/services/api/post-service'
 import { ChannelService } from '@/services/api/channel-service'
 import { POSTER_TASK_COMPLETED_EVENT } from '@/services/api/poster-service'
 import { mentionToPost } from './transforms'
@@ -53,6 +55,14 @@ import { MentionsFilter } from './components/mentions-filter'
 import { FilterBadges } from './components/filter-badges'
 
 const PER_PAGE = 20
+
+type FeedTab = 'all' | 'mention' | 'channel' | 'tracked-post'
+const TABS: { id: FeedTab; label: string; icon: React.ElementType }[] = [
+  { id: 'all', label: 'All', icon: AtSign },
+  { id: 'mention', label: 'Mentions', icon: AtSign },
+  { id: 'channel', label: 'Channels', icon: Radio },
+  { id: 'tracked-post', label: 'Posts', icon: Rss },
+]
 
 // ─── Sort options (from MVP) ──────────────────────────────────────────────────
 const SORT_OPTIONS = [
@@ -98,6 +108,12 @@ export function Mentions() {
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [stats, setStats] = useState<MentionStats | null>(null)
   const [filterOpen, setFilterOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<FeedTab>('all')
+  // Channel & tracked post data (fetched once, filtered on frontend)
+  const [channelPosts, setChannelPosts] = useState<PostData[]>([])
+  const [trackedPostData, setTrackedPostData] = useState<PostData[]>([])
+  const [channelPostsLoading, setChannelPostsLoading] = useState(false)
+  const [trackedPostsLoading, setTrackedPostsLoading] = useState(false)
   // Map of post subscription ID → active status
   const [postStatusMap, setPostStatusMap] = useState<Map<string, boolean>>(new Map())
   // Map of channel username → subscription ID (for Follow/Following detection)
@@ -310,6 +326,81 @@ export function Mentions() {
       .catch(() => { /* non-critical */ })
   }, [projectId])
 
+  // Fetch all channel posts (for "Channels" tab)
+  useEffect(() => {
+    if (!projectId) return
+    setChannelPostsLoading(true)
+    ChannelService.getChannels(projectId)
+      .then(async (channels) => {
+        const allPosts: PostData[] = []
+        await Promise.all(
+          channels.map(async (ch) => {
+            try {
+              const res = await ChannelService.getChannelPosts(projectId, ch.id)
+              allPosts.push(...res.posts)
+            } catch { /* skip failed channels */ }
+          })
+        )
+        // Sort by date descending
+        allPosts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        setChannelPosts(allPosts)
+      })
+      .catch(() => { /* non-critical */ })
+      .finally(() => setChannelPostsLoading(false))
+  }, [projectId])
+
+  // Fetch all tracked posts (for "Posts" tab)
+  useEffect(() => {
+    if (!projectId) return
+    setTrackedPostsLoading(true)
+    PostService.getPosts(projectId)
+      .then(({ posts: tracked }) => {
+        const converted = tracked.map((tp) => {
+          const pd = trackedPostToPostData(tp)
+          // Enrich channelSubscriptionId from followingMap
+          if (pd.channelUsername && followingMap.size > 0) {
+            const subId = followingMap.get(pd.channelUsername.toLowerCase())
+            if (subId) pd.channelSubscriptionId = subId
+          }
+          return pd
+        })
+        converted.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        setTrackedPostData(converted)
+      })
+      .catch(() => { /* non-critical */ })
+      .finally(() => setTrackedPostsLoading(false))
+  }, [projectId, followingMap])
+
+  // Load comments for a tracked post (lazy)
+  const loadTrackedPostComments = useCallback(
+    async (postId: string) => {
+      if (!projectId) return
+      try {
+        const { comments } = await PostService.getPostFull(projectId, postId)
+        const countSentiments = (list: typeof comments) => {
+          const s = { positive: 0, neutral: 0, negative: 0, question: 0 }
+          const walk = (items: typeof list) => {
+            for (const c of items) {
+              if (c.sentiment) s[c.sentiment]++
+              walk(c.replies)
+            }
+          }
+          walk(list)
+          return s
+        }
+        const stats = countSentiments(comments)
+        setTrackedPostData((prev) =>
+          prev.map((p) =>
+            p.id === postId
+              ? { ...p, comments, commentCount: comments.length, commentSentiments: stats }
+              : p
+          )
+        )
+      } catch { /* non-critical */ }
+    },
+    [projectId]
+  )
+
   // Infinite scroll
   useEffect(() => {
     const el = loadMoreRef.current
@@ -329,15 +420,77 @@ export function Mentions() {
 
   // Group by date
   const grouped = useMemo(() => {
+    // Determine which posts to display based on active tab
+    let displayPosts: PostData[]
+
+    if (activeTab === 'mention') {
+      // Mentions are already filtered/sorted by the API
+      displayPosts = posts
+    } else if (activeTab === 'channel') {
+      displayPosts = channelPosts
+    } else if (activeTab === 'tracked-post') {
+      displayPosts = trackedPostData
+    } else {
+      // "all" — merge mentions + channels + tracked posts, dedupe by id
+      const merged = new Map<string, PostData>()
+      for (const p of posts) merged.set(p.id, p)
+      for (const p of channelPosts) if (!merged.has(p.id)) merged.set(p.id, p)
+      for (const p of trackedPostData) if (!merged.has(p.id)) merged.set(p.id, p)
+      displayPosts = Array.from(merged.values())
+    }
+
+    // Apply frontend filters to non-mention data (channels, tracked posts, and
+    // the non-mention items in "all" mode). Mentions are already server-filtered.
+    if (activeTab !== 'mention') {
+      displayPosts = displayPosts.filter((p) => {
+        // Skip filtering for mentions in "all" mode — they're already API-filtered
+        if (activeTab === 'all' && p.source === 'mention') return true
+
+        if (effectiveFilters.platform && p.platform !== effectiveFilters.platform) return false
+        if (effectiveFilters.sentiment && p.sentiment !== effectiveFilters.sentiment) return false
+        if (effectiveFilters.search) {
+          const s = effectiveFilters.search.toLowerCase()
+          if (!p.body.toLowerCase().includes(s) && !p.title.toLowerCase().includes(s) && !p.author.username.toLowerCase().includes(s)) return false
+        }
+        if (effectiveFilters.relevance_from !== undefined && p.relevance < effectiveFilters.relevance_from) return false
+        if (effectiveFilters.relevance_to !== undefined && p.relevance > effectiveFilters.relevance_to) return false
+        if (effectiveFilters.unified_score_from !== undefined && p.unifiedScore < effectiveFilters.unified_score_from) return false
+        if (effectiveFilters.unified_score_to !== undefined && p.unifiedScore > effectiveFilters.unified_score_to) return false
+        if (effectiveFilters.posted_at_from) {
+          if (p.createdAt < new Date(effectiveFilters.posted_at_from)) return false
+        }
+        if (effectiveFilters.posted_at_to) {
+          if (p.createdAt > new Date(effectiveFilters.posted_at_to)) return false
+        }
+        if (effectiveFilters.has_comments === true && p.commentCount === 0) return false
+        if (effectiveFilters.has_comments === false && p.commentCount > 0) return false
+        if (effectiveFilters.is_commentable === true && !p.commentable) return false
+        if (effectiveFilters.is_commentable === false && p.commentable) return false
+        return true
+      })
+    }
+
+    // Apply sort for non-mention tabs
+    if (activeTab !== 'mention') {
+      const dir = effectiveFilters.order_direction === 'asc' ? 1 : -1
+      const key = effectiveFilters.order_by
+      displayPosts = [...displayPosts].sort((a, b) => {
+        if (key === 'relevance') return (a.relevance - b.relevance) * dir
+        if (key === 'unified_score') return (a.unifiedScore - b.unifiedScore) * dir
+        // Default: posted_at (createdAt)
+        return (a.createdAt.getTime() - b.createdAt.getTime()) * dir
+      })
+    }
+
     const groups: { date: string; posts: PostData[] }[] = []
     let cur = ''
-    for (const post of posts) {
+    for (const post of displayPosts) {
       const d = format(post.createdAt, 'd MMM, yyyy')
       if (d !== cur) { cur = d; groups.push({ date: d, posts: [post] }) }
       else groups[groups.length - 1].posts.push(post)
     }
     return groups
-  }, [posts])
+  }, [posts, channelPosts, trackedPostData, activeTab, effectiveFilters])
 
   // Count extra filters (beyond sort + date which are always shown)
   const extraFilterCount = useMemo(() => {
@@ -367,7 +520,10 @@ export function Mentions() {
             {isLoading ? (
               <Skeleton className='inline-block h-4 w-24' />
             ) : (
-              `${total} Mentions`
+              activeTab === 'mention' ? `${total} Mentions` :
+              activeTab === 'channel' ? `${channelPosts.length} Channel Posts` :
+              activeTab === 'tracked-post' ? `${trackedPostData.length} Tracked Posts` :
+              `${total + channelPosts.length + trackedPostData.length} Posts`
             )}
           </h1>
           <span className='hidden text-[11px] text-muted-foreground whitespace-nowrap sm:inline'>
@@ -497,6 +653,27 @@ export function Mentions() {
         <div className='flex gap-6'>
           {/* Content column */}
           <div className='min-w-0 flex-1'>
+            {/* Tab strip */}
+            {projectId && (
+              <div className='no-scrollbar -mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1'>
+                {TABS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type='button'
+                    onClick={() => setActiveTab(tab.id)}
+                    className={cn(
+                      'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+                      activeTab === tab.id
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+                    )}
+                  >
+                    <tab.icon className='size-3.5' />
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            )}
         {!projectId && !isLoading && (
           <div className='flex flex-col items-center justify-center py-16 text-center'>
             <div className='mb-4 flex size-14 items-center justify-center rounded-full bg-muted'>
@@ -509,7 +686,7 @@ export function Mentions() {
           </div>
         )}
 
-        {isLoading && (
+        {(isLoading || (activeTab === 'channel' && channelPostsLoading) || (activeTab === 'tracked-post' && trackedPostsLoading)) && (
           <div className='space-y-6'>
             {[1, 2, 3].map((i) => (
               <div key={i} className='space-y-2 rounded-lg px-2 py-3'>
@@ -528,7 +705,7 @@ export function Mentions() {
           </div>
         )}
 
-        {!isLoading && posts.length > 0 && (
+        {!isLoading && !(activeTab === 'channel' && channelPostsLoading) && !(activeTab === 'tracked-post' && trackedPostsLoading) && grouped.length > 0 && (
           <div>
             {grouped.map((g) => (
               <Fragment key={g.date}>
@@ -541,7 +718,13 @@ export function Mentions() {
                       'rounded-lg px-2 py-3 transition-all duration-700',
                       highlightedMentionId === post.id && 'bg-primary/5 shadow-[inset_3px_0_0_0] shadow-primary rounded-l-none',
                     )}>
-                      <PostCard post={post} projectId={projectId} keywordId={post.keywordId ?? undefined} />
+                      <PostCard
+                        post={post}
+                        projectId={projectId}
+                        keywordId={post.keywordId ?? undefined}
+                        trackedPostId={post.source === 'tracked-post' ? post.id : undefined}
+                        onLoadComments={post.source === 'tracked-post' ? () => loadTrackedPostComments(post.id) : undefined}
+                      />
                     </div>
                     {i < g.posts.length - 1 && <Separator />}
                   </Fragment>
@@ -551,7 +734,7 @@ export function Mentions() {
           </div>
         )}
 
-        {!isLoading && projectId && posts.length === 0 && (
+        {!isLoading && !(activeTab === 'channel' && channelPostsLoading) && !(activeTab === 'tracked-post' && trackedPostsLoading) && projectId && grouped.length === 0 && (
           <div className='flex flex-col items-center justify-center py-16 text-center'>
             <div className='mb-4 flex size-14 items-center justify-center rounded-full bg-muted'>
               <AtSign className='size-7 text-muted-foreground' />
@@ -577,14 +760,14 @@ export function Mentions() {
           </div>
         )}
 
-        {hasMore && !isLoading && <div ref={loadMoreRef} className='h-1' />}
+        {hasMore && !isLoading && activeTab === 'mention' && <div ref={loadMoreRef} className='h-1' />}
         {isLoadingMore && (
           <div className='flex items-center justify-center py-6'>
             <Loader2 className='size-5 animate-spin text-muted-foreground' />
             <span className='ml-2 text-sm text-muted-foreground'>Loading more…</span>
           </div>
         )}
-        {!isLoading && !hasMore && posts.length > 0 && (
+        {!isLoading && !hasMore && posts.length > 0 && activeTab === 'mention' && (
           <p className='py-6 text-center text-sm text-muted-foreground'>No more mentions to load</p>
         )}
           </div>

@@ -169,7 +169,7 @@ function transformComment(c: ChannelComment, postOwner?: string): CommentData {
   }
 }
 
-function transformPost(post: ChannelPost, channelUsername: string): PostData {
+function transformPost(post: ChannelPost, channelUsername: string, channelId?: string): PostData {
   const comments = post.comments_tree?.map((c) =>
     transformComment(c, channelUsername)
   ) ?? []
@@ -193,6 +193,7 @@ function transformPost(post: ChannelPost, channelUsername: string): PostData {
 
   return {
     id: post.id,
+    source: 'channel' as const,
     author: { username: post.post_author || channelUsername },
     platform: 'telegram',
     title: post.ai_analysis.summary,
@@ -209,6 +210,8 @@ function transformPost(post: ChannelPost, channelUsername: string): PostData {
     isDeleted: post.is_deleted,
     commentable: true,
     comments,
+    channelSubscriptionId: channelId ?? null,
+    channelUsername,
   }
 }
 
@@ -242,7 +245,7 @@ export const ChannelService = {
         username: res.channel_username,
         status: res.status,
       },
-      posts: res.posts.map((p) => transformPost(p, res.channel_username)),
+      posts: res.posts.map((p) => transformPost(p, res.channel_username, res.id)),
     }
   },
 

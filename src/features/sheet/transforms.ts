@@ -43,6 +43,7 @@ export function mentionToPost(
 
   return {
     id: m.id,
+    source: 'mention',
     author: { username: m.author },
     platform: m.platform,
     title: m.summary,

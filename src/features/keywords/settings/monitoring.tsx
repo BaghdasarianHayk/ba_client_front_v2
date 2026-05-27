@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from '@tanstack/react-router'
-import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
@@ -11,6 +9,7 @@ import { InfoTooltip } from '@/components/info-tooltip'
 import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { KeywordService } from '@/services/api/keyword-service'
+import { useSettingsSave } from '@/hooks/use-settings-save'
 
 export function KeywordMonitoring() {
   const { keywordId } = useParams({ strict: false }) as { keywordId?: string }
@@ -20,7 +19,6 @@ export function KeywordMonitoring() {
   const [active, setActive] = useState(true)
   const [threshold, setThreshold] = useState(50)
   const [prompt, setPrompt] = useState('')
-  const [saving, setSaving] = useState(false)
   const [loaded, setLoaded] = useState(isNew)
 
   useEffect(() => {
@@ -38,7 +36,6 @@ export function KeywordMonitoring() {
 
   const handleSave = async () => {
     if (!keywordId || isNew) return
-    setSaving(true)
     try {
       await KeywordService.updateKeyword(keywordId, {
         is_active: active,
@@ -48,10 +45,15 @@ export function KeywordMonitoring() {
       toast.success('Monitoring settings saved')
     } catch (err: any) {
       toast.error(err.detail || err.message || 'Failed to save')
-    } finally {
-      setSaving(false)
     }
   }
+
+  const { register, unregister } = useSettingsSave()
+  useEffect(() => {
+    if (isNew) return
+    register({ handler: handleSave })
+    return unregister
+  })
 
   if (!loaded) return null
 
@@ -109,13 +111,6 @@ export function KeywordMonitoring() {
             className='min-h-[72px] resize-y text-sm'
           />
         </div>
-
-        {!isNew && (
-          <Button onClick={handleSave} disabled={saving}>
-            {saving && <Loader2 className='animate-spin' />}
-            Save Changes
-          </Button>
-        )}
       </div>
     </ContentSection>
   )

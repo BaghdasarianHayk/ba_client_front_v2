@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from '@tanstack/react-router'
-import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
@@ -11,6 +9,7 @@ import { InfoTooltip } from '@/components/info-tooltip'
 import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { PostService } from '@/services/api/post-service'
+import { useSettingsSave } from '@/hooks/use-settings-save'
 
 export function TrackedPostAutoReply() {
   const { postId } = useParams({ strict: false }) as { postId?: string }
@@ -22,7 +21,6 @@ export function TrackedPostAutoReply() {
   const [threshold, setThreshold] = useState(70)
   const [countRange, setCountRange] = useState<[number, number]>([0, 10])
   const [rules, setRules] = useState('')
-  const [saving, setSaving] = useState(false)
   const [loaded, setLoaded] = useState(isNew)
 
   useEffect(() => {
@@ -40,7 +38,6 @@ export function TrackedPostAutoReply() {
 
   const handleSave = async () => {
     if (!projectId || !postId || isNew) return
-    setSaving(true)
     try {
       await PostService.updatePost(projectId, postId, {
         autoreply_comment_threshold: enabled ? threshold : 101,
@@ -58,10 +55,15 @@ export function TrackedPostAutoReply() {
       toast.success('Auto reply settings saved')
     } catch (err: any) {
       toast.error(err.detail || err.message || 'Failed to save')
-    } finally {
-      setSaving(false)
     }
   }
+
+  const { register, unregister } = useSettingsSave()
+  useEffect(() => {
+    if (isNew) return
+    register({ handler: handleSave })
+    return unregister
+  })
 
   if (!loaded) return null
 
@@ -141,13 +143,6 @@ export function TrackedPostAutoReply() {
             />
           </div>
         </div>
-
-        {!isNew && (
-          <Button onClick={handleSave} disabled={saving}>
-            {saving && <Loader2 className='animate-spin' />}
-            Save Changes
-          </Button>
-        )}
       </div>
     </ContentSection>
   )

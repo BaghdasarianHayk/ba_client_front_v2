@@ -6,6 +6,7 @@ import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { HeaderSaveButton } from '@/components/header-save-button'
 import { SidebarNav } from '@/features/settings/components/sidebar-nav'
 import { FollowingGeneral } from './general'
 import { FollowingMonitoring } from './monitoring'
@@ -43,6 +44,7 @@ export function FollowingSettings() {
           {isNew ? 'New Following' : 'Following Settings'}
         </h1>
         <div className='ms-auto flex items-center space-x-4'>
+          <HeaderSaveButton />
           <ThemeSwitch />
           <ProfileDropdown />
         </div>

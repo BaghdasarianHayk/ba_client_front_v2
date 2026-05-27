@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router'
-import { Loader2, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   AlertDialog,
@@ -19,6 +19,7 @@ import { Switch } from '@/components/ui/switch'
 import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { PostService } from '@/services/api/post-service'
+import { useSettingsSave } from '@/hooks/use-settings-save'
 
 export function TrackedPostGeneral() {
   const navigate = useNavigate()
@@ -30,7 +31,6 @@ export function TrackedPostGeneral() {
 
   const [url, setUrl] = useState(initialUrl ?? '')
   const [active, setActive] = useState(true)
-  const [saving, setSaving] = useState(false)
   const [loaded, setLoaded] = useState(isNew)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -48,7 +48,6 @@ export function TrackedPostGeneral() {
 
   const handleSave = async () => {
     if (!projectId || !url.trim()) return
-    setSaving(true)
     try {
       if (isNew) {
         const created = await PostService.createPost(projectId, {
@@ -81,10 +80,18 @@ export function TrackedPostGeneral() {
       }
     } catch (err: any) {
       toast.error(err.detail || err.message || 'Failed to save')
-    } finally {
-      setSaving(false)
     }
   }
+
+  const { register, unregister } = useSettingsSave()
+  useEffect(() => {
+    register({
+      handler: handleSave,
+      disabled: !url.trim(),
+      label: isNew ? 'Start Tracking' : 'Save Changes',
+    })
+    return unregister
+  })
 
   const handleDelete = async () => {
     if (!projectId || !postId) return
@@ -141,14 +148,6 @@ export function TrackedPostGeneral() {
         </div>
 
         <div className='flex items-center gap-2'>
-          <Button
-            onClick={handleSave}
-            disabled={saving || !url.trim()}
-          >
-            {saving && <Loader2 className='animate-spin' />}
-            {isNew ? 'Start Tracking' : 'Save Changes'}
-          </Button>
-
           {!isNew && (
             <Button
               variant='destructive'

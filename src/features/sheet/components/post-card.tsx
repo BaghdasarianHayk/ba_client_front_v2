@@ -573,7 +573,6 @@ function CommentFilter({
   onToggleSentiment: (key: Sentiment) => void
 }) {
   const allSelected = selectedSentiments.size === 0 || selectedSentiments.size === 4
-  const isTelegram = post.platform === 'telegram'
 
   return (
     <div className={cn(
@@ -614,8 +613,8 @@ function CommentFilter({
         </TooltipContent>
       </Tooltip>
 
-      {/* Desktop: inline count — Telegram only */}
-      {isTelegram && (
+      {/* Desktop: inline count — show when there are comments */}
+      {post.commentCount > 0 && (
       <div className='hidden items-center gap-0.5 sm:flex'>
         {sentimentFilters.map(
           ({ key, icon: Icon, activeColor, activeBg, label }) => {
@@ -646,8 +645,8 @@ function CommentFilter({
       </div>
       )}
 
-      {/* Mobile: badge count — Telegram only */}
-      {isTelegram && (
+      {/* Mobile: badge count — show when there are comments */}
+      {post.commentCount > 0 && (
       <div className='flex items-center gap-0.5 sm:hidden'>
         {sentimentFilters.map(
           ({ key, icon: Icon, activeColor, activeBg, label }) => {

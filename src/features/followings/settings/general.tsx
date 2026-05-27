@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router'
-import { Loader2, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   AlertDialog,
@@ -19,6 +19,7 @@ import { Switch } from '@/components/ui/switch'
 import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { ChannelService } from '@/services/api/channel-service'
+import { useSettingsSave } from '@/hooks/use-settings-save'
 
 export function FollowingGeneral() {
   const navigate = useNavigate()
@@ -30,7 +31,6 @@ export function FollowingGeneral() {
 
   const [username, setUsername] = useState(initialUsername ?? '')
   const [active, setActive] = useState(true)
-  const [saving, setSaving] = useState(false)
   const [loaded, setLoaded] = useState(isNew)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -46,7 +46,6 @@ export function FollowingGeneral() {
 
   const handleSave = async () => {
     if (!projectId || !username.trim()) return
-    setSaving(true)
     try {
       if (isNew) {
         const created = await ChannelService.createChannel(projectId, {
@@ -72,10 +71,18 @@ export function FollowingGeneral() {
       }
     } catch (err: any) {
       toast.error(err.detail || err.message || 'Failed to save')
-    } finally {
-      setSaving(false)
     }
   }
+
+  const { register, unregister } = useSettingsSave()
+  useEffect(() => {
+    register({
+      handler: handleSave,
+      disabled: !username.trim(),
+      label: isNew ? 'Create Following' : 'Save Changes',
+    })
+    return unregister
+  })
 
   const handleDelete = async () => {
     if (!projectId || !channelId) return
@@ -129,11 +136,6 @@ export function FollowingGeneral() {
         </div>
 
         <div className='flex items-center gap-2'>
-          <Button onClick={handleSave} disabled={saving || !username.trim()}>
-            {saving && <Loader2 className='animate-spin' />}
-            {isNew ? 'Create Following' : 'Save Changes'}
-          </Button>
-
           {!isNew && (
             <Button
               variant='destructive'

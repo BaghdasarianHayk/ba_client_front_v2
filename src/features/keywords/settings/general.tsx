@@ -1,6 +1,6 @@
 import { useEffect, useState, type KeyboardEvent } from 'react'
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router'
-import { Building2, Globe, Loader2, Plus, Swords, X } from 'lucide-react'
+import { Building2, Globe, Plus, Swords, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,6 +12,7 @@ import { ContentSection } from '@/features/settings/components/content-section'
 import { PlatformIcon, type PlatformId } from '@/components/platform-icon'
 import { useProjectStore } from '@/stores/project-store'
 import { KeywordService } from '@/services/api/keyword-service'
+import { useSettingsSave } from '@/hooks/use-settings-save'
 
 const ALL_PLATFORMS: { id: PlatformId; label: string }[] = [
   { id: 'reddit', label: 'Reddit' },
@@ -42,7 +43,6 @@ export function KeywordGeneral() {
   const [excludeInput, setExcludeInput] = useState('')
   const [platforms, setPlatforms] = useState<Set<PlatformId>>(new Set(ALL_PLATFORMS.map((p) => p.id)))
   const [kwType, setKwType] = useState<'brand' | 'competitor' | 'general'>('general')
-  const [saving, setSaving] = useState(false)
   const [loaded, setLoaded] = useState(isNew)
 
   // Load keyword for edit
@@ -78,7 +78,6 @@ export function KeywordGeneral() {
 
   const handleSave = async () => {
     if (!kw.trim() || platforms.size === 0 || !currentProject) return
-    setSaving(true)
     try {
       const req = {
         keyword: kw.trim(),
@@ -112,10 +111,19 @@ export function KeywordGeneral() {
       }
     } catch (err: any) {
       toast.error(err.detail || err.message || 'Failed to save')
-    } finally {
-      setSaving(false)
     }
   }
+
+  // Register save handler with the Header button
+  const { register, unregister } = useSettingsSave()
+  useEffect(() => {
+    register({
+      handler: handleSave,
+      disabled: !kw.trim() || platforms.size === 0,
+      label: isNew ? 'Create Keyword' : 'Save Changes',
+    })
+    return unregister
+  }) // intentionally no deps — re-registers on every render to capture latest state
 
   if (!loaded) return null
 
@@ -220,11 +228,6 @@ export function KeywordGeneral() {
             Determines which knowledge base and reply strategy the AI uses.
           </p>
         </div>
-
-        <Button onClick={handleSave} disabled={saving || !kw.trim() || platforms.size === 0}>
-          {saving && <Loader2 className='animate-spin' />}
-          {isNew ? 'Create Keyword' : 'Save Changes'}
-        </Button>
       </div>
     </ContentSection>
   )

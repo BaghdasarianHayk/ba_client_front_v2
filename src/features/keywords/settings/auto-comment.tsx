@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from '@tanstack/react-router'
-import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
@@ -12,6 +10,7 @@ import { InfoTooltip } from '@/components/info-tooltip'
 import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { KeywordService } from '@/services/api/keyword-service'
+import { useSettingsSave } from '@/hooks/use-settings-save'
 
 export function KeywordAutoComment() {
   const { keywordId } = useParams({ strict: false }) as { keywordId?: string }
@@ -23,7 +22,6 @@ export function KeywordAutoComment() {
   const [score, setScore] = useState(0)
   const [countRange, setCountRange] = useState<[number, number]>([0, 10])
   const [rules, setRules] = useState('')
-  const [saving, setSaving] = useState(false)
   const [loaded, setLoaded] = useState(isNew)
 
   useEffect(() => {
@@ -43,7 +41,6 @@ export function KeywordAutoComment() {
 
   const handleSave = async () => {
     if (!keywordId || isNew) return
-    setSaving(true)
     try {
       await KeywordService.updateKeyword(keywordId, {
         autoreply_mention_threshold: enabled ? threshold : 101,
@@ -55,10 +52,15 @@ export function KeywordAutoComment() {
       toast.success('Auto comment settings saved')
     } catch (err: any) {
       toast.error(err.detail || err.message || 'Failed to save')
-    } finally {
-      setSaving(false)
     }
   }
+
+  const { register, unregister } = useSettingsSave()
+  useEffect(() => {
+    if (isNew) return
+    register({ handler: handleSave })
+    return unregister
+  })
 
   if (!loaded) return null
 
@@ -148,13 +150,6 @@ export function KeywordAutoComment() {
             />
           </div>
         </div>
-
-        {!isNew && (
-          <Button onClick={handleSave} disabled={saving}>
-            {saving && <Loader2 className='animate-spin' />}
-            Save Changes
-          </Button>
-        )}
       </div>
     </ContentSection>
   )

@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useParams } from '@tanstack/react-router'
-import { Angry, ArrowRight, Loader2, Meh, MessageCircleQuestion, Smile, ThumbsDown, ThumbsUp } from 'lucide-react'
+import { Angry, ArrowRight, Meh, MessageCircleQuestion, Smile, ThumbsDown, ThumbsUp } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { ChannelService } from '@/services/api/channel-service'
+import { useSettingsSave } from '@/hooks/use-settings-save'
 
 type SentimentId = 'positive' | 'negative' | 'neutral' | 'question'
 type ReactionType = 'POSITIVE' | 'NEGATIVE' | null
@@ -32,7 +32,6 @@ export function FollowingReactPosts() {
   const [reactions, setReactions] = useState<Record<SentimentId, ReactionType>>({
     positive: null, negative: null, neutral: null, question: null,
   })
-  const [saving, setSaving] = useState(false)
   const [loaded, setLoaded] = useState(isNew)
 
   useEffect(() => {
@@ -51,7 +50,6 @@ export function FollowingReactPosts() {
 
   const handleSave = async () => {
     if (!projectId || !channelId || isNew) return
-    setSaving(true)
     try {
       const sentiments: Record<string, string[]> = {}
       for (const [k, v] of Object.entries(reactions)) {
@@ -64,10 +62,15 @@ export function FollowingReactPosts() {
       toast.success('React settings saved')
     } catch (err: any) {
       toast.error(err.detail || err.message || 'Failed to save')
-    } finally {
-      setSaving(false)
     }
   }
+
+  const { register, unregister } = useSettingsSave()
+  useEffect(() => {
+    if (isNew) return
+    register({ handler: handleSave })
+    return unregister
+  })
 
   if (!loaded) return null
 
@@ -131,13 +134,6 @@ export function FollowingReactPosts() {
             </div>
           </div>
         </div>
-
-        {!isNew && (
-          <Button onClick={handleSave} disabled={saving}>
-            {saving && <Loader2 className='animate-spin' />}
-            Save Changes
-          </Button>
-        )}
       </div>
     </ContentSection>
   )

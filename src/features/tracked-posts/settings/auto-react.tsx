@@ -3,7 +3,6 @@ import { useParams } from '@tanstack/react-router'
 import {
   Angry,
   ArrowRight,
-  Loader2,
   Meh,
   MessageCircleQuestion,
   Smile,
@@ -12,7 +11,6 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
@@ -20,6 +18,7 @@ import { InfoTooltip } from '@/components/info-tooltip'
 import { ContentSection } from '@/features/settings/components/content-section'
 import { useProjectStore } from '@/stores/project-store'
 import { PostService } from '@/services/api/post-service'
+import { useSettingsSave } from '@/hooks/use-settings-save'
 
 type SentimentId = 'positive' | 'negative' | 'neutral' | 'question'
 type ReactionType = 'POSITIVE' | 'NEGATIVE' | null
@@ -67,7 +66,6 @@ export function TrackedPostAutoReact() {
   const [reactions, setReactions] = useState<
     Record<SentimentId, ReactionType>
   >({ positive: null, negative: null, neutral: null, question: null })
-  const [saving, setSaving] = useState(false)
   const [loaded, setLoaded] = useState(isNew)
 
   useEffect(() => {
@@ -91,7 +89,6 @@ export function TrackedPostAutoReact() {
 
   const handleSave = async () => {
     if (!projectId || !postId || isNew) return
-    setSaving(true)
     try {
       const sentiments: Record<string, string[]> = {}
       for (const [k, v] of Object.entries(reactions)) {
@@ -104,10 +101,15 @@ export function TrackedPostAutoReact() {
       toast.success('Auto react settings saved')
     } catch (err: any) {
       toast.error(err.detail || err.message || 'Failed to save')
-    } finally {
-      setSaving(false)
     }
   }
+
+  const { register, unregister } = useSettingsSave()
+  useEffect(() => {
+    if (isNew) return
+    register({ handler: handleSave })
+    return unregister
+  })
 
   if (!loaded) return null
 
@@ -191,13 +193,6 @@ export function TrackedPostAutoReact() {
             </div>
           </div>
         </div>
-
-        {!isNew && (
-          <Button onClick={handleSave} disabled={saving}>
-            {saving && <Loader2 className='animate-spin' />}
-            Save Changes
-          </Button>
-        )}
       </div>
     </ContentSection>
   )

@@ -6,6 +6,9 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
 import { sidebarData } from './data/sidebar-data'
@@ -39,13 +42,16 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
       <SidebarFooter>
-        <Link
-          to='/help-center'
-          className='flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-        >
-          <HelpCircle className='size-4' />
-          <span>Help Center</span>
-        </Link>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip='Help Center'>
+              <Link to='/help-center'>
+                <HelpCircle />
+                <span>Help Center</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

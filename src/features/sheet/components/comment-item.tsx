@@ -481,7 +481,7 @@ export function CommentItem({ comment, platform, autoExpand = false, projectId, 
                 <p
                   ref={!expanded ? bodyRefCallback : undefined}
                   className={cn(
-                    'whitespace-pre-line text-sm leading-relaxed text-muted-foreground',
+                    'whitespace-pre-line text-sm leading-relaxed text-foreground/90',
                     !expanded && 'line-clamp-3'
                   )}
                 >
@@ -615,7 +615,7 @@ export function CommentItem({ comment, platform, autoExpand = false, projectId, 
                 <p
                   ref={!expanded ? bodyRefCallback : undefined}
                   className={cn(
-                    'whitespace-pre-line text-sm leading-relaxed text-muted-foreground',
+                    'whitespace-pre-line text-sm leading-relaxed text-foreground/90',
                     !expanded && 'line-clamp-3'
                   )}
                 >

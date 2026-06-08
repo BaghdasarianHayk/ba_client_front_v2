@@ -1,7 +1,7 @@
 :root {
   --radius: 0.625rem;
   /* Telegram Light Theme (Day) */
-  --background: #ffffff;
+  --background: #f4f4f5;
   --foreground: #000000;
   --card: #ffffff;
   --card-foreground: #000000;
@@ -9,9 +9,9 @@
   --popover-foreground: #000000;
   --primary: #3390ec;
   --primary-foreground: #ffffff;
-  --secondary: #f4f4f5;
+  --secondary: #e7e8ec;
   --secondary-foreground: #222222;
-  --muted: #f4f4f5;
+  --muted: #e9eaee;
   --muted-foreground: #707579;
   --accent: #e3f2fd;
   --accent-foreground: #3390ec;
@@ -26,7 +26,7 @@
   --chart-4: #e53935;
   --chart-5: #9b59b6;
 
-  --sidebar: #ffffff;
+  --sidebar: #f4f4f5;
   --sidebar-foreground: #000000;
   --sidebar-primary: #3390ec;
   --sidebar-primary-foreground: #ffffff;
@@ -38,7 +38,7 @@
 
 .dark {
   /* Telegram Dark Theme */
-  --background: #17212b;
+  --background: #0e1621;
   --foreground: #f5f5f5;
   --card: #232e3c;
   --card-foreground: #f5f5f5;
@@ -63,7 +63,7 @@
   --chart-4: #ec3942;
   --chart-5: #9b59b6;
 
-  --sidebar: #0e1621;
+  --sidebar: #17212b;
   --sidebar-foreground: #f5f5f5;
   --sidebar-primary: #6ab2f2;
   --sidebar-primary-foreground: #0e1621;

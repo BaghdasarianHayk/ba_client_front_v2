@@ -715,9 +715,10 @@ export function Mentions() {
                     <div
                       data-post-id={post.id}
                       className={cn(
-                      'rounded-lg px-2 py-3 transition-all duration-700',
-                      highlightedMentionId === post.id && 'bg-primary/5 shadow-[inset_3px_0_0_0] shadow-primary rounded-l-none',
-                    )}>
+                        'rounded-lg px-2 py-3 transition-all duration-700',
+                        highlightedMentionId === post.id && 'bg-primary/5 shadow-[inset_3px_0_0_0] shadow-primary rounded-l-none',
+                      )}
+                    >
                       <PostCard
                         post={post}
                         projectId={projectId}
@@ -774,7 +775,7 @@ export function Mentions() {
 
           {/* Filter sidebar — visible only on wide screens */}
           <aside className='hidden w-80 shrink-0 2xl:block'>
-            <div className='sticky top-20 flex h-[calc(100svh-6rem)] flex-col rounded-lg border'>
+            <div className='sticky top-20 flex h-[calc(100svh-6rem)] flex-col overflow-hidden rounded-xl border bg-sidebar'>
               <MentionsFilter
                 filters={effectiveFilters}
                 stats={stats}

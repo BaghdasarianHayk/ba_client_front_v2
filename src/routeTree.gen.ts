@@ -50,6 +50,7 @@ import { Route as AuthGoogleCallbackRouteImport } from './routes/auth/google/cal
 import { Route as AuthenticatedSettingsCommentsRouteImport } from './routes/_authenticated/settings/comments'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccessRouteImport } from './routes/_authenticated/settings/access'
+import { Route as AuthenticatedProjectsNewRouteImport } from './routes/_authenticated/projects/new'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedTrackedPostsNewRouteRouteImport } from './routes/_authenticated/tracked-posts/new/route'
 import { Route as AuthenticatedKeywordsKeywordIdRouteRouteImport } from './routes/_authenticated/keywords/$keywordId/route'
@@ -290,6 +291,12 @@ const AuthenticatedSettingsAccessRoute =
     path: '/access',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedProjectsNewRoute =
+  AuthenticatedProjectsNewRouteImport.update({
+    id: '/projects/new',
+    path: '/projects/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedErrorsErrorRoute =
   AuthenticatedErrorsErrorRouteImport.update({
     id: '/errors/$error',
@@ -458,6 +465,7 @@ export interface FileRoutesByFullPath {
   '/keywords/$keywordId': typeof AuthenticatedKeywordsKeywordIdRouteRouteWithChildren
   '/tracked-posts/new': typeof AuthenticatedTrackedPostsNewRouteRouteWithChildren
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/projects/new': typeof AuthenticatedProjectsNewRoute
   '/settings/access': typeof AuthenticatedSettingsAccessRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/comments': typeof AuthenticatedSettingsCommentsRoute
@@ -518,6 +526,7 @@ export interface FileRoutesByTo {
   '/auth/magic': typeof AuthMagicRoute
   '/': typeof AuthenticatedIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/projects/new': typeof AuthenticatedProjectsNewRoute
   '/settings/access': typeof AuthenticatedSettingsAccessRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/comments': typeof AuthenticatedSettingsCommentsRoute
@@ -584,6 +593,7 @@ export interface FileRoutesById {
   '/_authenticated/keywords/$keywordId': typeof AuthenticatedKeywordsKeywordIdRouteRouteWithChildren
   '/_authenticated/tracked-posts/new': typeof AuthenticatedTrackedPostsNewRouteRouteWithChildren
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/_authenticated/projects/new': typeof AuthenticatedProjectsNewRoute
   '/_authenticated/settings/access': typeof AuthenticatedSettingsAccessRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/comments': typeof AuthenticatedSettingsCommentsRoute
@@ -650,6 +660,7 @@ export interface FileRouteTypes {
     | '/keywords/$keywordId'
     | '/tracked-posts/new'
     | '/errors/$error'
+    | '/projects/new'
     | '/settings/access'
     | '/settings/appearance'
     | '/settings/comments'
@@ -710,6 +721,7 @@ export interface FileRouteTypes {
     | '/auth/magic'
     | '/'
     | '/errors/$error'
+    | '/projects/new'
     | '/settings/access'
     | '/settings/appearance'
     | '/settings/comments'
@@ -775,6 +787,7 @@ export interface FileRouteTypes {
     | '/_authenticated/keywords/$keywordId'
     | '/_authenticated/tracked-posts/new'
     | '/_authenticated/errors/$error'
+    | '/_authenticated/projects/new'
     | '/_authenticated/settings/access'
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/comments'
@@ -1127,6 +1140,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsAccessRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/projects/new': {
+      id: '/_authenticated/projects/new'
+      path: '/projects/new'
+      fullPath: '/projects/new'
+      preLoaderRoute: typeof AuthenticatedProjectsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/errors/$error': {
       id: '/_authenticated/errors/$error'
       path: '/errors/$error'
@@ -1438,6 +1458,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedKeywordsKeywordIdRouteRoute: typeof AuthenticatedKeywordsKeywordIdRouteRouteWithChildren
   AuthenticatedTrackedPostsNewRouteRoute: typeof AuthenticatedTrackedPostsNewRouteRouteWithChildren
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
+  AuthenticatedProjectsNewRoute: typeof AuthenticatedProjectsNewRoute
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
   AuthenticatedAutoActionsIndexRoute: typeof AuthenticatedAutoActionsIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
@@ -1464,6 +1485,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTrackedPostsNewRouteRoute:
     AuthenticatedTrackedPostsNewRouteRouteWithChildren,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
+  AuthenticatedProjectsNewRoute: AuthenticatedProjectsNewRoute,
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
   AuthenticatedAutoActionsIndexRoute: AuthenticatedAutoActionsIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,

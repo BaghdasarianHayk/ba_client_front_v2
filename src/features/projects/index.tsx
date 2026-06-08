@@ -5,135 +5,17 @@ import {
   ArrowRight,
   Calendar,
   Globe,
-  Loader2,
   Plus,
   Search,
   Share2,
   Users,
-  X,
 } from 'lucide-react'
-import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Textarea } from '@/components/ui/textarea'
 import { useProjectStore } from '@/stores/project-store'
-import { ProjectService } from '@/services/api/project-service'
 import type { Project, SharedProject } from '@/services/api/types'
-
-// ─── Create Dialog ───────────────────────────────────────────────────────────
-
-function CreateProjectDialog({
-  open,
-  onOpenChange,
-}: {
-  open: boolean
-  onOpenChange: (o: boolean) => void
-}) {
-  const navigate = useNavigate()
-  const { fetchProjects, setCurrentProject } = useProjectStore()
-
-  const [name, setName] = useState('')
-  const [desc, setDesc] = useState('')
-  const [website, setWebsite] = useState('')
-  const [tags, setTags] = useState<string[]>([])
-  const [tagInput, setTagInput] = useState('')
-  const [saving, setSaving] = useState(false)
-
-  const reset = () => {
-    setName(''); setDesc(''); setWebsite(''); setTags([]); setTagInput('')
-  }
-
-  const addTag = () => {
-    const t = tagInput.trim().toLowerCase()
-    if (t && !tags.includes(t)) { setTags((p) => [...p, t]); setTagInput('') }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name.trim() || !desc.trim()) return
-    setSaving(true)
-    try {
-      const project = await ProjectService.createProject({
-        brand_name: name.trim(),
-        brand_description: desc.trim(),
-        brand_website: website.trim() || undefined,
-        brand_tags: tags.length ? tags : undefined,
-      })
-      toast.success('Project created')
-      await fetchProjects()
-      setCurrentProject(project)
-      onOpenChange(false)
-      reset()
-      navigate({ to: '/keywords' })
-    } catch (err: any) {
-      toast.error(err.detail || err.message || 'Failed to create')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o && !saving) { reset(); onOpenChange(false) } else onOpenChange(o) }}>
-      <DialogContent className='sm:max-w-md'>
-        <DialogHeader>
-          <DialogTitle>New Project</DialogTitle>
-          <DialogDescription>Add a brand to monitor across social platforms.</DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className='space-y-4'>
-          <div className='space-y-1.5'>
-            <Label className='text-xs'>Brand Name <span className='text-destructive'>*</span></Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder='Acme Corp' disabled={saving} autoFocus />
-          </div>
-          <div className='space-y-1.5'>
-            <Label className='text-xs'>Description <span className='text-destructive'>*</span></Label>
-            <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} placeholder='What does this brand do?' rows={3} disabled={saving} />
-          </div>
-          <div className='space-y-1.5'>
-            <Label className='text-xs'>Website</Label>
-            <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder='acme.com' disabled={saving} />
-          </div>
-          <div className='space-y-1.5'>
-            <Label className='text-xs'>Tags</Label>
-            {tags.length > 0 && (
-              <div className='flex flex-wrap gap-1'>
-                {tags.map((t) => (
-                  <Badge key={t} variant='secondary' className='gap-1 pr-1'>
-                    {t}
-                    <button type='button' onClick={() => setTags((p) => p.filter((x) => x !== t))} disabled={saving}>
-                      <X className='size-3' />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
-            <div className='flex gap-2'>
-              <Input value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag() } }} placeholder='Type + Enter' disabled={saving} />
-              <Button type='button' variant='outline' size='icon' onClick={addTag} disabled={!tagInput.trim() || saving}><Plus className='size-4' /></Button>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type='button' variant='outline' onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
-            <Button type='submit' disabled={saving || !name.trim() || !desc.trim()}>
-              {saving && <Loader2 className='mr-2 size-4 animate-spin' />}
-              Create
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  )
-}
 
 // ─── Project Card ────────────────────────────────────────────────────────────
 
@@ -224,7 +106,6 @@ export function ProjectsPage() {
   } = useProjectStore()
 
   const [search, setSearch] = useState('')
-  const [createOpen, setCreateOpen] = useState(false)
 
   useEffect(() => { fetchProjects() }, [fetchProjects])
 
@@ -265,7 +146,7 @@ export function ProjectsPage() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <Button className='gap-1.5' onClick={() => setCreateOpen(true)}>
+            <Button className='gap-1.5' onClick={() => navigate({ to: '/projects/new' })}>
               <Plus className='size-4' />
               <span className='hidden sm:inline'>New Project</span>
             </Button>
@@ -310,7 +191,7 @@ export function ProjectsPage() {
           <div className='flex flex-col items-center justify-center py-16 text-muted-foreground'>
             <p className='text-lg'>No projects yet</p>
             <p className='mt-1 text-sm'>Create your first project to start monitoring</p>
-            <Button className='mt-4 gap-1.5' onClick={() => setCreateOpen(true)}>
+            <Button className='mt-4 gap-1.5' onClick={() => navigate({ to: '/projects/new' })}>
               <Plus className='size-4' />
               Create Project
             </Button>
@@ -333,8 +214,6 @@ export function ProjectsPage() {
           </div>
         )}
       </main>
-
-      <CreateProjectDialog open={createOpen} onOpenChange={setCreateOpen} />
     </div>
   )
 }

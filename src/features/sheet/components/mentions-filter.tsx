@@ -3,6 +3,7 @@ import { format } from 'date-fns'
 import {
   BotMessageSquare,
   CalendarIcon,
+  Filter,
   MessageCircleOff,
   MessageCircleReply,
   MessageSquare,
@@ -27,7 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
 import { PlatformSelector } from '@/components/shared/platform-selector'
 import { SentimentSelector } from '@/components/shared/sentiment-selector'
 import { RangeSliderWithInput } from '@/components/shared/range-slider-with-input'
@@ -214,13 +214,15 @@ export function MentionsFilter({ filters, stats, onApply, onClose }: Props) {
 
   return (
     <div className='flex h-full flex-col overflow-hidden'>
-      <div className='flex shrink-0 items-center justify-between px-4 py-3'>
-        <span className='text-sm font-semibold'>Filters</span>
+      <div className='flex shrink-0 items-center justify-between border-b px-4 py-3'>
+        <span className='flex items-center gap-2 text-sm font-semibold'>
+          <Filter className='size-4 text-muted-foreground' />
+          Filters
+        </span>
         <Button variant='ghost' size='sm' className='h-7 text-xs' onClick={handleClear}>
           <X className='mr-1 size-3' />Clear
         </Button>
       </div>
-      <Separator className='shrink-0' />
 
       <div className='min-h-0 flex-1 overflow-y-auto px-4'>
         <div className='space-y-4 py-3'>
@@ -377,8 +379,7 @@ export function MentionsFilter({ filters, stats, onApply, onClose }: Props) {
         </div>
       </div>
 
-      <Separator className='shrink-0' />
-      <div className='shrink-0 border-t bg-background p-3'>
+      <div className='shrink-0 border-t p-3'>
         <Button className='w-full' onClick={handleApply}>Apply Filters</Button>
       </div>
     </div>

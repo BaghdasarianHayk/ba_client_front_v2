@@ -270,18 +270,20 @@ export function PostCard({ post, trackedPostId: trackedPostIdProp, onLoadComment
       </CardHeader>
 
       <CardContent className='px-0 pb-2 pt-1'>
-        {/* Title */}
-        <div className='flex flex-wrap items-center gap-2'>
-          <h3 className='text-base font-semibold leading-snug tracking-tight'>
-            {post.title}
-          </h3>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Sparkles className='size-3.5 text-purple-500' />
-            </TooltipTrigger>
-            <TooltipContent>AI Summary</TooltipContent>
-          </Tooltip>
-        </div>
+        {/* Title (AI summary) — only render when present */}
+        {post.title?.trim() && (
+          <div className='flex flex-wrap items-center gap-2'>
+            <h3 className='text-base font-semibold leading-snug tracking-tight'>
+              {post.title}
+            </h3>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Sparkles className='size-3.5 text-purple-500' />
+              </TooltipTrigger>
+              <TooltipContent>AI Summary</TooltipContent>
+            </Tooltip>
+          </div>
+        )}
 
         {/* Body preview — Telegram-style blockquote */}
         <div className='mt-1.5'>

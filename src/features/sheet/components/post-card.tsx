@@ -283,30 +283,33 @@ export function PostCard({ post, trackedPostId: trackedPostIdProp, onLoadComment
           </Tooltip>
         </div>
 
-        {/* Body preview */}
+        {/* Body preview — Telegram-style blockquote */}
         <div className='mt-1.5'>
-          <p
-            ref={!expanded ? bodyRefCallback : undefined}
-            className={cn(
-              'text-sm leading-relaxed text-muted-foreground whitespace-pre-line',
-              !expanded && 'line-clamp-3'
+          <div className='relative rounded-md bg-muted/60 py-2 pe-3 ps-3'>
+            <span className='absolute inset-y-0 start-0 w-[3px] rounded-full bg-primary' />
+            <p
+              ref={!expanded ? bodyRefCallback : undefined}
+              className={cn(
+                'text-sm leading-relaxed text-foreground/80 whitespace-pre-line',
+                !expanded && 'line-clamp-3'
+              )}
+              dangerouslySetInnerHTML={{
+                __html: highlightKeyword(
+                  post.body,
+                  post.reasons.find((r) => r.type === 'keyword')?.keyword
+                ),
+              }}
+            />
+            {clamped && (
+              <button
+                type='button'
+                onClick={() => setExpanded(!expanded)}
+                className='mt-1 text-sm font-semibold text-primary hover:underline'
+              >
+                {expanded ? 'less' : 'more'}
+              </button>
             )}
-            dangerouslySetInnerHTML={{
-              __html: highlightKeyword(
-                post.body,
-                post.reasons.find((r) => r.type === 'keyword')?.keyword
-              ),
-            }}
-          />
-          {clamped && (
-            <button
-              type='button'
-              onClick={() => setExpanded(!expanded)}
-              className='mt-1 text-sm font-semibold text-foreground hover:underline'
-            >
-              {expanded ? 'less' : 'more'}
-            </button>
-          )}
+          </div>
         </div>
       </CardContent>
 

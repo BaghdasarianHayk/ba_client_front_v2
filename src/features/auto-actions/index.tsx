@@ -7,6 +7,7 @@ import {
   MessageSquarePlus,
   MoreHorizontal,
   Pencil,
+  Plus,
   Radio,
   RefreshCw,
   Rss,
@@ -296,6 +297,30 @@ export function AutoActionsPage() {
           <Button variant='ghost' size='icon' className='size-8' onClick={fetchAll} disabled={loading}>
             <RefreshCw className={cn('size-4', loading && 'animate-spin')} />
           </Button>
+          {canEdit && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size='sm' className='h-8 gap-1.5'>
+                  <Plus className='size-3.5' />
+                  <span className='hidden sm:inline'>Add</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align='end'>
+                <DropdownMenuItem onClick={() => navigate({ to: '/keywords/new' as any })}>
+                  <KeyRound className='size-4' />
+                  Keyword
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate({ to: '/followings/new' })}>
+                  <Radio className='size-4' />
+                  Tracked Channel
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate({ to: '/tracked-posts/new' })}>
+                  <Rss className='size-4' />
+                  Tracked Post
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           {canEdit && (
             <Button
               variant='outline'
